@@ -1,0 +1,29 @@
+# Core Web Framework
+flask
+flask-cors
+flask-jwt-extended
+python-dotenv
+requests
+
+# Database
+mysqlclient
+
+# Document Processing
+PyMuPDF
+python-docx
+Pillow
+
+# AI & Machine Learning (RAG)
+sentence-transformers
+faiss-cpu
+numpy
+rank_bm25
+openai
+
+# Vision & OCR
+transformers
+torch
+pytesseract
+
+# Utilities
+pyotp
