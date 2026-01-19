@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI ChatBot - Authentication</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --success: #10b981;
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: var(--light);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            padding: 0 20px;
+        }
+
+        .auth-box {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .auth-subtitle {
+            color: var(--gray);
+            font-size: 16px;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--light);
+        }
+
+        .form-input {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.5);
+            color: var(--light);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+        }
+
+        .auth-btn {
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: var(--gradient);
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--light);
+        }
+
+        .auth-link {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 5px;
+        }
+
+        .auth-link:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: var(--accent);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .cors-info {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .cors-info h3 {
+            color: #ffc107;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cors-info ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .cors-info li {
+            margin-bottom: 8px;
+        }
+
+        .code {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid var(--primary);
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* OTP Section Styles */
+        .otp-section {
+            margin-top: 20px;
+            padding: 25px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .otp-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .otp-icon {
+            font-size: 40px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .otp-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--light);
+        }
+
+        .otp-header p {
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        .otp-input-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .otp-digit {
+            width: 45px;
+            height: 55px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--light);
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .otp-digit:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+            transform: scale(1.05);
+        }
+
+        .otp-digit.filled {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .otp-digit.error {
+            border-color: var(--accent);
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .otp-timer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--gray);
+            margin: 15px 0;
+        }
+
+        .otp-timer.expiring {
+            color: var(--accent);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .otp-verify-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 15px;
+        }
+
+        .otp-resend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        .resend-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .resend-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: scale(1.05);
+        }
+
+        .resend-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h1 class="auth-title">AI ChatBot</h1>
+                <p class="auth-subtitle">Sign in to continue to your account</p>
+            </div>
+
+            <!-- Login Form -->
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" placeholder="Enter your email" required>
+                    <div class="error-message" id="loginEmailError"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" placeholder="Enter your password" required>
+                    <div class="error-message" id="loginPasswordError"></div>
+                </div>
+                <button type="submit" class="auth-btn">Sign In</button>
+                <div class="loading" id="loginLoading">
+                    <div class="loading-spinner"></div>
+                    <p>Signing in...</p>
+                </div>
+            </form>
+
+            <!-- Register Form (initially hidden) -->
+            <form class="auth-form" id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-input" placeholder="Enter your full name" required>
+                    <div class="error-message" id="registerNameError"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" placeholder="Enter your email" required>
+                    <div class="error-message" id="registerEmailError"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" placeholder="Create a password" required>
+                    <div class="error-message" id="registerPasswordError"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date of Birth (Optional)</label>
+                    <input type="date" class="form-input">
+                </div>
+
+
+                <div id="otpSection" class="otp-section" style="display:none;">
+                    <div class="otp-header">
+                        <i class="fas fa-shield-alt otp-icon"></i>
+                        <h3>Verify Your Email</h3>
+                        <p>Enter the 6-digit code sent to your email</p>
+                    </div>
+
+                    <div class="otp-input-container">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric"
+                            autocomplete="one-time-code">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                    </div>
+                    <input type="hidden" id="otpInput">
+
+                    <div class="otp-timer" id="otpTimer">
+                        <i class="fas fa-clock"></i>
+                        <span>05:00</span>
+                    </div>
+
+                    <button type="button" id="verifyOtpBtn" class="auth-btn otp-verify-btn">
+                        <i class="fas fa-check-circle"></i> Verify OTP
+                    </button>
+
+                    <div class="otp-resend">
+                        <span>Didn't receive the code?</span>
+                        <button type="button" class="resend-btn" onclick="resendOtp()">
+                            <i class="fas fa-redo"></i> Resend OTP
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-btn">Create Account</button>
+                <div class="loading" id="registerLoading">
+                    <div class="loading-spinner"></div>
+                    <p>Creating account...</p>
+                </div>
+            </form>
+
+            <div class="auth-switch">
+                <span id="authSwitchText">Don't have an account?</span>
+                <span class="auth-link" id="authSwitchLink">Sign up</span>
+            </div>
+
+
+            <!-- CORS Information Box -->
+            <!-- <div class="cors-info">
+                <h3><i class="fas fa-exclamation-triangle"></i> CORS Issue Detected</h3>
+                <p>Your request was blocked due to CORS policy. To resolve this:</p>
+                <ul>
+                    <li>Ensure your Flask backend has CORS properly configured</li>
+                    <li>Add <span class="code">http://localhost</span> to allowed origins</li>
+                    <li>Or run this frontend on the same domain as your backend</li>
+                </ul>
+                <p>For testing, you can temporarily disable CORS in your browser or use a CORS extension.</p>
+            </div> -->
+
+
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Configuration - now loaded from config.js
+        const BASE_URL = window.API_CONFIG.BACKEND_URL;
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const authSwitchLink = document.getElementById('authSwitchLink');
+        const authSwitchText = document.getElementById('authSwitchText');
+        const loginLoading = document.getElementById('loginLoading');
+        const registerLoading = document.getElementById('registerLoading');
+
+        // State
+        let isLoginMode = true;
+
+        // Switch between login and register forms
+        authSwitchLink.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            if (isLoginMode) {
+                loginForm.style.display = 'flex';
+                registerForm.style.display = 'none';
+                authSwitchText.textContent = "Don't have an account?";
+                authSwitchLink.textContent = "Sign up";
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'flex';
+                authSwitchText.textContent = "Already have an account?";
+                authSwitchLink.textContent = "Sign in";
+            }
+        });
+
+        // Login form submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = loginForm.querySelector('input[type="email"]').value;
+            const password = loginForm.querySelector('input[type="password"]').value;
+
+            // Clear previous errors
+            hideAllErrors();
+
+            // Show loading
+            loginLoading.style.display = 'block';
+
+            try {
+                const response = await fetch(`${BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Save token and redirect to chat interface
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('user', JSON.stringify({
+                        id: data.user_id,
+                        email: data.email,
+                        full_name: data.full_name
+                    }));
+                    alert('Login successful! Redirecting to chat...');
+                    window.location.href = 'chatscreenui.html';
+                } else {
+                    showError('loginPasswordError', data.error || 'Login failed');
+                }
+            } catch (error) {
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    showError('loginPasswordError', 'CORS error: Could not connect to server. Check console for details.');
+                } else {
+                    showError('loginPasswordError', 'Network error. Please try again.');
+                }
+                console.error('Login error:', error);
+            } finally {
+                loginLoading.style.display = 'none';
+            }
+        });
+
+        // Register form submission
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = registerForm.querySelector('input[type="text"]').value;
+            const email = registerForm.querySelector('input[type="email"]').value;
+            const password = registerForm.querySelector('input[type="password"]').value;
+            const dateOfBirth = registerForm.querySelector('input[type="date"]').value;
+
+            // Clear previous errors
+            hideAllErrors();
+
+            // Show loading
+            registerLoading.style.display = 'block';
+
+            try {
+                const response = await fetch(`${BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        full_name: fullName,
+                        email,
+                        password,
+                        date_of_birth: dateOfBirth || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Instead of auto-login, show OTP section
+                    alert("OTP sent to your email. Please verify it to complete registration.");
+
+                    document.getElementById("otpSection").style.display = "block"; // show OTP input
+                    startOtpTimer();
+
+                    // attach verify button listener
+                    document.getElementById("verifyOtpBtn").onclick = async () => {
+                        const otp = document.getElementById("otpInput").value;
+
+                        try {
+                            const verifyResponse = await fetch(`${BASE_URL}/verify_otp`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ email, otp })
+                            });
+
+                            const verifyData = await verifyResponse.json();
+
+                            if (verifyResponse.ok) {
+                                // OTP verified → now auto login
+                                const loginResponse = await fetch(`${BASE_URL}/login`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ email, password })
+                                });
+
+                                const loginData = await loginResponse.json();
+
+                                if (loginResponse.ok) {
+                                    localStorage.setItem('authToken', loginData.token);
+                                    localStorage.setItem('user', JSON.stringify({
+                                        id: loginData.user_id,
+                                        email: loginData.email,
+                                        full_name: loginData.full_name
+                                    }));
+
+                                    alert("Registration & OTP verification successful! Redirecting to chat...");
+                                    window.location.href = "chatscreenui.html";
+                                } else {
+                                    showError('registerPasswordError', 'OTP verified but login failed. Please login manually.');
+                                }
+                            } else {
+                                showError('registerPasswordError', verifyData.error || 'Invalid OTP');
+                            }
+                        } catch (err) {
+                            console.error("OTP verification error:", err);
+                            showError('registerPasswordError', 'Network error during OTP verification.');
+                        }
+                    };
+
+                } else {
+                    showError('registerPasswordError', data.error || 'Registration failed');
+                }
+            } catch (error) {
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    showError('registerPasswordError', 'CORS error: Could not connect to server.');
+                } else {
+                    showError('registerPasswordError', 'Network error. Please try again.');
+                }
+                console.error('Registration error:', error);
+            } finally {
+                registerLoading.style.display = 'none';
+            }
+        });
+
+
+        // OTP Input Handler - Individual Digit Boxes
+        function setupOtpInputs() {
+            const otpDigits = document.querySelectorAll('.otp-digit');
+            const hiddenOtpInput = document.getElementById('otpInput');
+
+            otpDigits.forEach((input, index) => {
+                // Handle input
+                input.addEventListener('input', (e) => {
+                    const value = e.target.value;
+
+                    // Only allow numbers
+                    if (!/^\d*$/.test(value)) {
+                        e.target.value = '';
+                        return;
+                    }
+
+                    // Add filled class if has value
+                    if (value) {
+                        input.classList.add('filled');
+                        // Move to next input
+                        if (index < otpDigits.length - 1) {
+                            otpDigits[index + 1].focus();
+                        }
+                    } else {
+                        input.classList.remove('filled');
+                    }
+
+                    // Update hidden input with full OTP
+                    updateHiddenOtp();
+                });
+
+                // Handle backspace
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !input.value && index > 0) {
+                        otpDigits[index - 1].focus();
+                        otpDigits[index - 1].value = '';
+                        otpDigits[index - 1].classList.remove('filled');
+                    }
+                });
+
+                // Handle paste
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+                    const digits = pastedData.replace(/\D/g, '').slice(0, 6);
+
+                    digits.split('').forEach((digit, i) => {
+                        if (otpDigits[i]) {
+                            otpDigits[i].value = digit;
+                            otpDigits[i].classList.add('filled');
+                        }
+                    });
+
+                    // Focus on next empty or last
+                    const nextEmpty = Array.from(otpDigits).findIndex(inp => !inp.value);
+                    if (nextEmpty !== -1) {
+                        otpDigits[nextEmpty].focus();
+                    } else {
+                        otpDigits[5].focus();
+                    }
+
+                    updateHiddenOtp();
+                });
+            });
+
+            function updateHiddenOtp() {
+                const otp = Array.from(otpDigits).map(inp => inp.value).join('');
+                hiddenOtpInput.value = otp;
+            }
+        }
+
+        // Enhanced OTP Timer (5 minutes)
+        let otpTimerInterval = null;
+
+        function startOtpTimer() {
+            let timeLeft = 300; // 5 minutes in seconds
+            const timerDisplay = document.getElementById("otpTimer");
+            const timerSpan = timerDisplay.querySelector('span');
+
+            // Clear any existing timer
+            if (otpTimerInterval) {
+                clearInterval(otpTimerInterval);
+            }
+
+            // Setup OTP inputs
+            setupOtpInputs();
+
+            // Focus first input
+            setTimeout(() => {
+                const firstDigit = document.querySelector('.otp-digit');
+                if (firstDigit) firstDigit.focus();
+            }, 100);
+
+            otpTimerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(otpTimerInterval);
+                    timerSpan.textContent = "OTP expired";
+                    timerDisplay.classList.add('expiring');
+
+                    // Mark inputs as error
+                    document.querySelectorAll('.otp-digit').forEach(inp => {
+                        inp.classList.add('error');
+                    });
+                } else {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    timerSpan.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                    // Add expiring class when less than 30 seconds
+                    if (timeLeft <= 30) {
+                        timerDisplay.classList.add('expiring');
+                    }
+
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+
+        // Clear OTP inputs
+        function clearOtpInputs() {
+            document.querySelectorAll('.otp-digit').forEach(inp => {
+                inp.value = '';
+                inp.classList.remove('filled', 'error');
+            });
+            document.getElementById('otpInput').value = '';
+        }
+
+
+
+        // Show error message
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Hide all error messages
+        function hideAllErrors() {
+            const errorElements = document.querySelectorAll('.error-message');
+            errorElements.forEach(element => {
+                element.style.display = 'none';
+            });
+        }
+
+        function resendOtp() {
+            const email = registerForm.querySelector('input[type="email"]').value;
+
+            fetch(`${BASE_URL}/resend_otp`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert("OTP resent successfully. Please check your email.");
+                        startOtpTimer(); // Restart the timer
+                    } else {
+                        alert("Failed to resend OTP: " + (data.error || "Unknown error"));
+                    }
+                })
+                .catch(error => {
+                    console.error("Resend OTP error:", error);
+                    alert("Failed to resend OTP. Please try again.");
+                });
+        }
+
+        // Add a resend button to your OTP section
+        // In your OTP section, add:
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1394 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI ChatBot | Final Year Project</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --success: #10b981;
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: var(--transition);
+        }
+
+        body.light-mode {
+            background-color: #f1f5f9;
+            color: var(--dark);
+        }
+
+        .glass-effect {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* //ai chat icon */
+        /* //ai chat icon */
+        /* //ai chat icon */
+        #ai-chat-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-image: linear-gradient(135deg, 
+             rgb(99, 102, 241) 0%,
+             rgb(139, 92, 246) 50%, 
+             rgb(236, 72, 153) 100%); /* Blue background */
+            border-radius: 50%; /* Circular shape */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+            transition: transform 0.3s ease; /* Smooth hover effect */
+            z-index: 1000; /* Ensure it's on top, floating above content */
+            border: none; /* Remove button border */
+            padding: 0; /* Remove padding */
+        }
+        #ai-chat-icon:hover {
+            transform: scale(1.1); /* Slight enlarge on hover */
+        }
+
+        #ai-chat-icon::before {
+            content: "💬"; /* Chat bubble emoji as icon */
+            font-size: 30px;
+        }
+
+        .light-mode .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .section {
+            padding: 80px 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 15px 0;
+            transition: var(--transition);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--light);
+        }
+
+        .light-mode .logo {
+            color: var(--dark);
+        }
+
+        .logo span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-left: 5px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            margin: 0 15px;
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .light-mode .nav-links a {
+            color: var(--dark);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover:after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--gradient);
+            color: white;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            box-shadow: none;
+        }
+
+        .light-mode .btn-outline {
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--light);
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        .light-mode .hamburger span {
+            background: var(--dark);
+        }
+
+        /* Splash Screen */
+       .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: var(--dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 2000;
+            transition: opacity 1.5s ease;
+        }
+
+        .splash-screen.hidden {
+            opacity: 0;
+            pointer-events: none; /* Prevent interaction during fade */
+        }
+
+        .splash-logo {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease 0.5s forwards;
+        }
+
+        .splash-tagline {
+            font-size: 1.2rem;
+            color: var(--light);
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease 1s forwards;
+        }
+
+        .splash-btn {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: var(--light);
+            color: var(--dark);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease 1.5s forwards;
+        }
+
+        .splash-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Fade-in animation */
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Home Section */
+        .home-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+        }
+
+        .home-text {
+            flex: 1;
+        }
+
+        .home-text h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .home-text h1 span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .home-text p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            color: #cbd5e1;
+        }
+
+        .light-mode .home-text p {
+            color: var(--gray);
+        }
+
+        .home-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .home-image {
+            flex: 1;
+            text-align: center;
+        }
+
+        .home-image img {
+            max-width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Chat Section */
+        .chat-container {
+            display: flex;
+            gap: 30px;
+            height: 70vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .light-mode .sidebar {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-mode .sidebar-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .search-chats {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-chats input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.5);
+            color: var(--light);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .light-mode .search-chats input {
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--dark);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .search-chats i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .saved-chats {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chat-item:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .light-mode .chat-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .sidebar-actions {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-mode .sidebar-actions {
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-action {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .sidebar-action:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .light-mode .sidebar-action:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .light-mode .chat-main {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .light-mode .chat-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 15px;
+            position: relative;
+            animation: messageIn 0.3s ease;
+        }
+
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.ai {
+            background: rgba(99, 102, 241, 0.2);
+            border-bottom-left-radius: 5px;
+            align-self: flex-start;
+        }
+
+        .light-mode .message.ai {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .message.user {
+            background: rgba(139, 92, 246, 0.2);
+            border-bottom-right-radius: 5px;
+            align-self: flex-end;
+        }
+
+        .light-mode .message.user {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .light-mode .chat-input {
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 15px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.5);
+            color: var(--light);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .light-mode .chat-input input {
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--dark);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-input input:focus {
+            border-color: var(--primary);
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-action-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.2);
+            border: none;
+            color: var(--light);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .light-mode .chat-action-btn {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--dark);
+        }
+
+        .chat-action-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Services Section */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-mode .service-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            transform: rotate(45deg);
+            transition: var(--transition);
+        }
+
+        .service-icon i {
+            transform: rotate(-45deg);
+        }
+
+        .service-card:hover .service-icon {
+            transform: rotate(0);
+            border-radius: 50%;
+        }
+
+        .service-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .service-card p {
+            color: #cbd5e1;
+        }
+
+        .light-mode .service-card p {
+            color: var(--gray);
+        }
+
+        /* About Sections */
+        .about-content, .creator-content {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .about-text, .creator-text {
+            flex: 1;
+        }
+
+        .about-text h2, .creator-text h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+
+        .about-text p, .creator-text p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #cbd5e1;
+        }
+
+        .light-mode .about-text p, .light-mode .creator-text p {
+            color: var(--gray);
+        }
+
+        .about-image, .creator-image {
+            flex: 1;
+            text-align: center;
+        }
+
+        .about-image img, .creator-image img {
+            max-width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Contact Section */
+        .contact-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 50px;
+        }
+
+        .contact-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        .contact-details {
+            margin-top: 30px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .contact-form {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-mode .contact-form {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.5);
+            color: var(--light);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .light-mode .form-control {
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--dark);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 40px 0;
+            margin-top: 60px;
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-mode footer {
+            background: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .light-mode .footer-links a {
+            color: var(--gray);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+            padding-left: 5px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--light);
+            transition: var(--transition);
+        }
+
+        .light-mode .social-links a {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--dark);
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-5px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+
+        .light-mode .copyright {
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            color: var(--gray);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .home-content, .about-content, .creator-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .home-buttons {
+                justify-content: center;
+            }
+            
+            .chat-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .sidebar {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hamburger {
+                display: flex;
+            }
+            
+            .home-text h1 {
+                font-size: 2.5rem;
+            }
+            
+            .section {
+                padding: 60px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-logo">AI ChatBot</div>
+        <div class="splash-tagline">Your intelligent assistant powered by AI</div>
+        <button class="btn splash-btn" id="startBtn">Get Started</button>
+    </div>
+
+    <!-- Header -->
+    <header class="glass-effect">
+        <div class="container header-container">
+            <a href="#" class="logo">AI<span>ChatBot</span></a>
+            
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <a href="login_regis.html" target="_blank" id="newChatBtn">Chat</a>
+                <a href="#services">Services</a>
+                <a href="#about">About Project</a>
+                <a href="#creator">About Creator</a>
+                <a href="#contact">Contact</a>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="btn-outline" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Home Section -->
+    <section class="section" id="home">
+        <div class="container home-content">
+            <div class="home-text">
+                <h1>Experience the Power of <span>AI Chat</span></h1>
+                <p>Our advanced chatbot utilizes cutting-edge artificial intelligence to provide intelligent responses, answer queries, and assist with various tasks. Experience the future of conversation today.</p>
+                <div class="home-buttons">
+                    <button class="btn">Start Chatting</button>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-play-circle"></i> Watch Demo
+                    </button>
+                </div>
+            </div>
+            <div class="home-image">
+                <img src="https://cdn.prod.website-files.com/634054c00f602044abb3060d/6493311b4fb3f00cc62310f1_Best%20AI%20Chatbots.webp" alt="AI Chat Visualization">
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Section -->
+    <section class="section" id="chat">
+        <div class="container">
+            <h2 class="text-3xl font-bold text-center mb-10">Chat Interface</h2>
+            
+            <div class="chat-container">
+                <div class="sidebar">
+                    <div class="sidebar-header">
+                        <h3>Conversations</h3>
+                    </div>
+                    
+                    <button class="btn new-chat-btn">
+                        <i class="fas fa-plus"></i> New Chat
+                    </button>
+                    
+                    <div class="search-chats">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search chats...">
+                    </div>
+                    
+                    <div class="saved-chats">
+                        <div class="chat-item">
+                            <div>Project Discussion</div>
+                            <small>Yesterday</small>
+                        </div>
+                        <div class="chat-item">
+                            <div>Technical Support</div>
+                            <small>2 days ago</small>
+                        </div>
+                        <div class="chat-item">
+                            <div>General Inquiry</div>
+                            <small>Last week</small>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-actions">
+                        <div class="sidebar-action">
+                            <i class="fas fa-save"></i>
+                            <span>Save Chat</span>
+                        </div>
+                        <div class="sidebar-action">
+                            <i class="fas fa-broom"></i>
+                            <span>Clear Chats</span>
+                        </div>
+                        <div class="sidebar-action">
+                            <i class="fas fa-moon"></i>
+                            <span>Toggle Theme</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-main">
+                    <div class="chat-header">
+                        <h3>AI Assistant</h3>
+                        <div class="chat-status">
+                            <span class="status-dot"></span>
+                            Online
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages">
+                        <div class="message ai">
+                            Hello! I'm your AI assistant. How can I help you today?
+                        </div>
+                        <div class="message user">
+                            I'd like to learn more about your capabilities.
+                        </div>
+                        <div class="message ai">
+                            I can answer questions, provide information, analyze documents, and much more. What would you like to know?
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input">
+                        <input type="text" placeholder="Type your message...">
+                        <div class="chat-actions">
+                            <button class="chat-action-btn">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button class="chat-action-btn">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button class="chat-action-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="section" id="services">
+        <div class="container">
+            <h2 class="text-3xl font-bold text-center mb-10">Our Services</h2>
+            
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Intelligent Conversations</h3>
+                    <p>Engage in natural, human-like conversations with our advanced AI chatbot.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>Document Analysis</h3>
+                    <p>Upload documents and get summaries, insights, and answers from your content.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Smart Search</h3>
+                    <p>Find information quickly with our AI-powered search capabilities.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <h3>Multilingual Support</h3>
+                    <p>Communicate in multiple languages with accurate translation.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>Task Automation</h3>
+                    <p>Automate repetitive tasks and increase your productivity.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Data Analysis</h3>
+                    <p>Get insights from your data with advanced analytical capabilities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Project Section -->
+    <section class="section" id="about">
+        <div class="container about-content">
+            <div class="about-text">
+                <h2>About The Project</h2>
+                <p>This AI chatbot is a Final Year Project developed to demonstrate the capabilities of modern artificial intelligence in natural language processing and conversation.</p>
+                <p>The system is designed to understand context, provide relevant responses, and learn from interactions to improve over time.</p>
+                <p>Our goal is to create an AI assistant that can be integrated into various platforms to enhance user experience and provide valuable assistance.</p>
+                <button class="btn">Learn More</button>
+            </div>
+            <div class="about-image">
+                <img src="https://messengerbot.app/wp-content/uploads/2025/05/chatbot-voice-assistant-1280x731.png" alt="About Project">
+            </div>
+        </div>
+    </section>
+
+    <!-- About Creator Section -->
+    <section class="section" id="creator">
+        <div class="container creator-content">
+            <div class="creator-image">
+                <img src="C:\Users\AfzalTAS\Desktop\chatbot-ui\webAssets\Afzal2.jpg" alt="Creator">
+            </div>
+            <div class="creator-text">
+                <h2>About The Creator</h2>
+                <p>This project was developed by University o Sindh team, a final year Computer Science students at University of Sindh.</p>
+                <p>With a passion for artificial intelligence and web development, they have combined these interests to create this advanced chatbot system.</p>
+                <p>this team has expertise in machine learning, natural language processing, and full-stack web development.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fas fa-envelope"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section" id="contact">
+        <div class="container">
+            <h2 class="text-3xl font-bold text-center mb-10">Get In Touch</h2>
+            
+            <div class="contact-container">
+                <div class="contact-info">
+                    <h3>Let's Talk About Your Project</h3>
+                    <p>Feel free to reach out if you want to collaborate with us, or simply have a question.</p>
+                    
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <h4>Location</h4>
+                                <p><a href="https://www.bing.com/maps/directions?ty=18&vdpid=7409559364731666433&v=2&sV=1&FORM=MIRE&secq=25.407309%2C68.338774&srs=mp" target="_blank">Qasimabad, Hyderabad, Sindh, Pakistan</a></p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4>Email</h4>
+                                <p><a href="https://mail.google.com/mail/?view=cm&fs=1&tf=1&to=afzalkhanrind92@gmail.com" target="_blank">afzalkhanrind92@gmail.com</a></p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <h4>Phone</h4>
+                                <p>+92 340 9813189</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="Your Name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <input type="email" class="form-control" placeholder="Your Email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <textarea class="form-control" placeholder="Your Message" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    <button id="ai-chat-icon"></button>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>AI ChatBot</h3>
+                    <p>An intelligent chatbot solution powered by artificial intelligence for modern applications.</p>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#chat">Chat</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API</a></li>
+                        <li><a href="#">Tutorials</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2023 AI ChatBot. All Rights Reserved. | Final Year Project</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        
+
+      document.getElementById('ai-chat-icon').addEventListener('click', function() {
+    localStorage.setItem('startNewChat', 'true'); // Set flag
+    window.open('login_regis.html', '_blank');   // Open chat screen
+});
+
+        // DOM Elements
+        const splashScreen = document.getElementById('splashScreen');
+        const startBtn = document.getElementById('startBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        // Hide splash screen and show main content
+       window.addEventListener('load', () => {
+            const splashScreen = document.getElementById('splashScreen');
+            setTimeout(() => {
+                splashScreen.classList.add('hidden'); // Start fade-out
+                setTimeout(() => {
+                    splashScreen.style.display = 'none'; // Remove from layout
+                    // Scroll to home section
+                    document.getElementById('home').scrollIntoView({ behavior: 'smooth' });
+                }, 1500); // Match CSS transition duration (1.5s)
+            }, 2000); // 2-second delay before fade starts
+        });
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            
+            if (body.classList.contains('light-mode')) {
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        });
+
+        // Chat functionality
+        const messageInput = document.querySelector('.chat-input input');
+        const sendButton = document.querySelector('.chat-action-btn:last-child');
+        const chatMessages = document.querySelector('.chat-messages');
+
+        function addMessage(text, isUser = false) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(isUser ? 'user' : 'ai');
+            messageElement.textContent = text;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function generateAIResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+                return "Hello there! How can I assist you today?";
+            } else if (lowerMessage.includes('how are you')) {
+                return "I'm just a program, but I'm functioning perfectly! How can I help you?";
+            } else if (lowerMessage.includes('name')) {
+                return "I'm AI ChatBot, your virtual assistant.";
+            } else if (lowerMessage.includes('help')) {
+                return "I can answer questions, provide information, and assist with various tasks. What do you need help with?";
+            } else if (lowerMessage.includes('thank')) {
+                return "You're welcome! Is there anything else I can help with?";
+            } else {
+                const responses = [
+                    "That's interesting. Tell me more about it.",
+                    "I understand. How can I assist you with that?",
+                    "I'm here to help. What else would you like to know?",
+                    "That's a great question. Let me think about it...",
+                    "I'm designed to assist with various tasks. How can I help you?"
+                ];
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+        }
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message === '') return;
+            
+            addMessage(message, true);
+            messageInput.value = '';
+            
+            // Simulate AI response after a short delay
+            setTimeout(() => {
+                addMessage(generateAIResponse(message), false);
+            }, 1000);
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Add some sample messages for demo
+        setTimeout(() => {
+            addMessage("Hello! I'm your AI assistant. How can I help you today?", false);
+        }, 2000);
+    </script>
+</body>
+</html>

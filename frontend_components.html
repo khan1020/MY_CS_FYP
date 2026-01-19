@@ -1,0 +1,520 @@
+<!-- frontend_components.html -->
+<!-- Week 6: Frontend UI Components for Enhanced RAG Features -->
+<!-- Add these to chatscreenui.html -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        /* Query History Panel */
+        .history-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .history-panel.open {
+            right: 0;
+        }
+
+        .history-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            background: #f5f5f5;
+        }
+
+        .history-timestamp {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .history-query {
+            font-weight: 500;
+            margin: 5px 0;
+        }
+
+        .history-rerun-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Bookmark Button */
+        .bookmark-btn {
+            background: #FFC107;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+
+        .bookmark-btn.bookmarked {
+            background: #FF9800;
+        }
+
+        .bookmark-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* Template Selector */
+        .template-selector {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .template-category {
+            margin-bottom: 20px;
+        }
+
+        .template-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .template-card:hover {
+            border-color: #2196F3;
+            background: #f0f8ff;
+        }
+
+        .template-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .template-desc {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .template-variables {
+            background: #fff9e6;
+            padding: 8px;
+            margin-top: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        /* Page Number Badge */
+        .page-badge {
+            display: inline-block;
+            background: #2196F3;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        /* Source Citation */
+        .source-citation {
+            background: #f5f5f5;
+            border-left: 3px solid #4CAF50;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 13px;
+            color: #555;
+        }
+
+        /* Tree Visualization Container */
+        .tree-container {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: auto;
+            background: #fafafa;
+        }
+
+        .tree-node {
+            fill: #4CAF50;
+            stroke: #333;
+            stroke-width: 2px;
+        }
+
+        .tree-node.user {
+            fill: #2196F3;
+        }
+
+        .tree-link {
+            fill: none;
+            stroke: #999;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Query History Panel -->
+    <div id="historyPanel" class="history-panel">
+        <div style="padding: 20px; background: #2196F3; color: white;">
+            <h3 style="margin: 0;">Query History</h3>
+            <button onclick="closeHistoryPanel()"
+                style="float: right; background: transparent; border: none; color: white; cursor: pointer; font-size: 20px;">×</button>
+        </div>
+        <div id="historyList"></div>
+    </div>
+
+    <!-- Bookmark Modal -->
+    <div id="bookmarkModal"
+        style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 2000;">
+        <h3>Bookmark Response</h3>
+        <input type="text" id="bookmarkTitle" placeholder="Title (optional)"
+            style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="text" id="bookmarkTags" placeholder="Tags (comma-separated)"
+            style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px;">
+        <textarea id="bookmarkNotes" placeholder="Notes (optional)"
+            style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; height: 80px;"></textarea>
+        <div style="text-align: right; margin-top: 15px;">
+            <button onclick="closeBookmarkModal()"
+                style="padding: 10px 20px; margin-right: 10px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+            <button onclick="saveBookmark()"
+                style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Save</button>
+        </div>
+    </div>
+
+    <!-- Template Selector -->
+    <div id="templateSelector" class="template-selector" style="display: none;">
+        <h3>Select a Template</h3>
+        <div id="templateCategories"></div>
+    </div>
+
+    <!-- Conversation Tree Visualization -->
+    <div id="conversationTree" class="tree-container" style="display: none;">
+        <svg id="treeSvg" width="100%" height="100%"></svg>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="config.js"></script>
+
+    <script>
+        // Global variables
+        let currentMessageId = null;
+        const API_BASE = window.API_CONFIG.BACKEND_URL;  // Use centralized config
+        const authToken = localStorage.getItem('token');
+
+        // ============= Query History =============
+        function openHistoryPanel() {
+            document.getElementById('historyPanel').classList.add('open');
+            loadQueryHistory();
+        }
+
+        function closeHistoryPanel() {
+            document.getElementById('historyPanel').classList.remove('open');
+        }
+
+        async function loadQueryHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/query_history?limit=50`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                const historyList = document.getElementById('historyList');
+                historyList.innerHTML = '';
+
+                data.history.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.innerHTML = `
+                <div class="history-timestamp">${new Date(item.timestamp).toLocaleString()}</div>
+                <div class="history-query">${item.query_text.substring(0, 100)}...</div>
+                <button class="history-rerun-btn" onclick="rerunQuery(${item.id})">
+                    🔄 Re-run
+                </button>
+            `;
+                    historyList.appendChild(historyItem);
+                });
+            } catch (error) {
+                console.error('Failed to load history:', error);
+            }
+        }
+
+        async function rerunQuery(queryId) {
+            try {
+                const response = await fetch(`${API_BASE}/rerun_query/${queryId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                // Show comparison
+                alert(`Original: ${data.original_response.substring(0, 100)}...\n\nNew: ${data.new_response.substring(0, 100)}...\n\nDifferences: ${data.differences}`);
+            } catch (error) {
+                console.error('Failed to rerun query:', error);
+            }
+        }
+
+        // ============= Bookmarks =============
+        function showBookmarkModal(messageId) {
+            currentMessageId = messageId;
+            document.getElementById('bookmarkModal').style.display = 'block';
+        }
+
+        function closeBookmarkModal() {
+            document.getElementById('bookmarkModal').style.display = 'none';
+            currentMessageId = null;
+        }
+
+        async function saveBookmark() {
+            const title = document.getElementById('bookmarkTitle').value;
+            const tagsInput = document.getElementById('bookmarkTags').value;
+            const notes = document.getElementById('bookmarkNotes').value;
+
+            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()) : [];
+
+            try {
+                const response = await fetch(`${API_BASE}/bookmarks`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message_id: currentMessageId,
+                        title: title,
+                        tags: tags,
+                        notes: notes
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Bookmark saved!');
+                    closeBookmarkModal();
+                }
+            } catch (error) {
+                console.error('Failed to save bookmark:', error);
+            }
+        }
+
+        async function exportBookmarks() {
+            try {
+                const response = await fetch(`${API_BASE}/export_bookmarks`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'bookmarks_export.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                }
+            } catch (error) {
+                console.error('Failed to export bookmarks:', error);
+            }
+        }
+
+        // ============= Templates =============
+        async function loadTemplates() {
+            try {
+                const response = await fetch(`${API_BASE}/templates?include_system=true`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                // Group by category
+                const categories = {};
+                data.templates.forEach(template => {
+                    const cat = template.category || 'general';
+                    if (!categories[cat]) categories[cat] = [];
+                    categories[cat].push(template);
+                });
+
+                const container = document.getElementById('templateCategories');
+                container.innerHTML = '';
+
+                Object.keys(categories).forEach(category => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'template-category';
+                    categoryDiv.innerHTML = `<h4>${category.toUpperCase()}</h4>`;
+
+                    categories[category].forEach(template => {
+                        const card = document.createElement('div');
+                        card.className = 'template-card';
+                        card.onclick = () => selectTemplate(template);
+                        card.innerHTML = `
+                    <div class="template-name">${template.name}</div>
+                    <div class="template-desc">${template.description || ''}</div>
+                    ${template.variables ? `<div class="template-variables">Variables: ${template.variables.join(', ')}</div>` : ''}
+                `;
+                        categoryDiv.appendChild(card);
+                    });
+
+                    container.appendChild(categoryDiv);
+                });
+
+                document.getElementById('templateSelector').style.display = 'block';
+            } catch (error) {
+                console.error('Failed to load templates:', error);
+            }
+        }
+
+        function selectTemplate(template) {
+            // Show input form for variables
+            const variables = template.variables || [];
+
+            if (variables.length > 0) {
+                const inputs = variables.map(v => prompt(`Enter value for {${v}}:`));
+                const varMap = {};
+                variables.forEach((v, i) => varMap[v] = inputs[i]);
+                executeTemplate(template.id, varMap);
+            } else {
+                executeTemplate(template.id, {});
+            }
+        }
+
+        async function executeTemplate(templateId, variables) {
+            try {
+                const response = await fetch(`${API_BASE}/execute_template`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        template_id: templateId,
+                        variables: variables
+                    })
+                });
+
+                const data = await response.json();
+
+                // Display the result in chat
+                alert(`Query: ${data.executed_query}\n\nAnswer: ${data.answer.substring(0, 200)}...`);
+            } catch (error) {
+                console.error('Failed to execute template:', error);
+            }
+        }
+
+        // ============= Conversation Tree Visualization =============
+        async function showConversationTree(chatId) {
+            try {
+                const response = await fetch(`${API_BASE}/branches/${chatId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const tree = await response.json();
+
+                document.getElementById('conversationTree').style.display = 'block';
+                renderTree(tree);
+            } catch (error) {
+                console.error('Failed to load conversation tree:', error);
+            }
+        }
+
+        function renderTree(treeData) {
+            const svg = d3.select("#treeSvg");
+            svg.selectAll("*").remove();
+
+            const width = 800;
+            const height = 600;
+
+            // Create tree layout
+            const treeLayout = d3.tree().size([height - 100, width - 200]);
+
+            // Convert to hierarchy
+            const root = d3.stratify()
+                .id(d => d.id)
+                .parentId(d => d.parent_id)
+                (treeData.nodes);
+
+            treeLayout(root);
+
+            const g = svg.append("g").attr("transform", "translate(50,50)");
+
+            // Draw links
+            g.selectAll(".tree-link")
+                .data(root.links())
+                .enter()
+                .append("path")
+                .attr("class", "tree-link")
+                .attr("d", d3.linkHorizontal()
+                    .x(d => d.y)
+                    .y(d => d.x));
+
+            // Draw nodes
+            const nodes = g.selectAll(".tree-node")
+                .data(root.descendants())
+                .enter()
+                .append("g")
+                .attr("transform", d => `translate(${d.y},${d.x})`);
+
+            nodes.append("circle")
+                .attr("class", d => `tree-node ${d.data.sender}`)
+                .attr("r", 8);
+
+            nodes.append("text")
+                .attr("x", 12)
+                .attr("y", 4)
+                .text(d => d.data.text.substring(0, 30) + '...')
+                .style("font-size", "12px");
+        }
+
+        // ============= Helper Functions =============
+        function addPageBadge(pageNumber) {
+            return `<span class="page-badge">Page ${pageNumber}</span>`;
+        }
+
+        function addSourceCitation(source, page) {
+            return `<div class="source-citation">Source: ${source} ${page ? `(Page ${page})` : ''}</div>`;
+        }
+
+        // Add bookmark button to each AI message
+        function addBookmarkButton(messageElement, messageId) {
+            const btn = document.createElement('button');
+            btn.className = 'bookmark-btn';
+            btn.innerHTML = '⭐ Bookmark';
+            btn.onclick = () => showBookmarkModal(messageId);
+            messageElement.appendChild(btn);
+        }
+    </script>
+
+</body>
+
+</html>

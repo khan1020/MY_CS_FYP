@@ -1,0 +1,79 @@
+# Secrets (CRITICAL)
+.env
+.env.local
+api keys.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+tempCodeRunnerFile.py
+
+# Jupyter Notebooks
+*.ipynb
+.ipynb_checkpoints
+
+# Large Model Files & Data
+model/
+sentence-transformers/
+models/
+*.bin
+*.pth
+*.pt
+*.onnx
+
+# User Data & Uploads
+user_data/
+uploads/
+faiss_index.bin
+faiss_index.bin.meta.pkl
+paragraphs.pkl
+*.pkl
+
+# Backups & Unrelated Folders
+backup not related to project/
+*_BACKUP_*.py
+week*.py
+debug_*.py
+check_*.py
+test*.py
+fix_*.py
+integration_*.py
+
+# Documentation & Artifacts
+*.md
+!README.md
+*.pdf
+*.txt
+!requirements.txt
+.agent/
+.gemini/
+WEEK*
+
+# Images in Root (Project assets should be in static/uploads)
+*.jpg
+*.png
+
+# IDE settings
+.vscode/
+.idea/
