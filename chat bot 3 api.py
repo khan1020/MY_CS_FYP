@@ -75,12 +75,13 @@ INDEX_META_PATH = FAISS_INDEX_PATH + ".meta.pkl"
 # OPENROUTER API Configuration - loaded from environment variables
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_BASE_URL = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+# LLM_MODEL_NAME = os.environ.get("LLM_MODEL_NAME", "meta-llama/llama-3.3-70b-instruct:free")
 LLM_MODEL_NAME = os.environ.get("LLM_MODEL_NAME", "openai/gpt-4o-mini")
 
 if not OPENROUTER_API_KEY:
     logging.warning("OPENROUTER_API_KEY not set in environment - LLM features will be disabled")
 
-MAX_CONTEXT_CHARS = int(os.environ.get("MAX_CONTEXT_CHARS", "5000"))
+MAX_CONTEXT_CHARS = int(os.environ.get("MAX_CONTEXT_CHARS", "100000"))
 TOP_K = int(os.environ.get("TOP_K", "40"))
 
 DB_CONFIG = {
@@ -112,19 +113,16 @@ MAX_PROFILE_PIC_BYTES = 2 * 1024 * 1024  # 2 MB
 
 # Helper functions for user data paths
 def get_user_data_path(user_id: int, subfolder: str = "") -> str:
-    """Get the path to a user's data folder or subfolder.
-    
-    Structure:
-    user_data/
-    └── user_<id>/
-        ├── profile/       # Profile picture
-        ├── uploads/       # PDFs, docs, images
-        ├── indexes/       # FAISS index files
-        ├── paragraphs/    # Extracted text paragraphs
-        ├── recordings/    # Voice recordings
-        └── exports/       # Chat exports
-    """
-    base_path = os.path.join(USER_DATA_FOLDER, f"user_{user_id}")
+    """Get the path to a user's data folder or subfolder (LEGACY/GLOBAL)."""
+    base_path = os.path.join(USER_DATA_FOLDER, f"user_{int(user_id)}")
+    if subfolder:
+        return os.path.join(base_path, subfolder)
+    return base_path
+
+def get_chat_data_path(user_id: int, chat_id: int, subfolder: str = "") -> str:
+    """Get the path to a CHAT'S specific data folder."""
+    # Structure: user_data/user_X/chats/chat_Y/...
+    base_path = os.path.join(USER_DATA_FOLDER, f"user_{int(user_id)}", "chats", f"chat_{int(chat_id)}")
     if subfolder:
         return os.path.join(base_path, subfolder)
     return base_path
@@ -134,11 +132,24 @@ def ensure_user_folders(user_id: int) -> dict:
     paths = {
         "base": get_user_data_path(user_id),
         "profile": get_user_data_path(user_id, "profile"),
-        "uploads": get_user_data_path(user_id, "uploads"),
-        "indexes": get_user_data_path(user_id, "indexes"),
-        "paragraphs": get_user_data_path(user_id, "paragraphs"),
+        "uploads": get_user_data_path(user_id, "uploads"), # Legacy global uploads
+        "indexes": get_user_data_path(user_id, "indexes"), # Legacy global indexes
+        "paragraphs": get_user_data_path(user_id, "paragraphs"), # Legacy global paragraphs
         "recordings": get_user_data_path(user_id, "recordings"),
         "exports": get_user_data_path(user_id, "exports"),
+        "chats": get_user_data_path(user_id, "chats"), # Parent for chat folders
+    }
+    for path in paths.values():
+        os.makedirs(path, exist_ok=True)
+    return paths
+
+def ensure_chat_folders(user_id: int, chat_id: int) -> dict:
+    """Create folders for a specific chat."""
+    paths = {
+        "base": get_chat_data_path(user_id, chat_id),
+        "uploads": get_chat_data_path(user_id, chat_id, "uploads"),
+        "indexes": get_chat_data_path(user_id, chat_id, "indexes"),
+        "paragraphs": get_chat_data_path(user_id, chat_id, "paragraphs"),
     }
     for path in paths.values():
         os.makedirs(path, exist_ok=True)
@@ -152,9 +163,9 @@ app.config.from_object(config)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersecret")
 #working ngrok tunnel link https://d81916b5db93.ngrok-free.app
 # CORS
-CORS(app, resources={r"/*": {"origins": ["http://localhost", "https://e13febe3a5e1.ngrok-free.app", "http://127.0.0.1:5000"],
+CORS(app, resources={r"/*": {"origins": ["http://localhost", "https://70d0-121-52-154-58.ngrok-free.app", "http://127.0.0.1:5000"],
                              "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-                             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+                             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With", "ngrok-skip-browser-warning"],
                              "supports_credentials": True}})
 
 # preflight handler (returns early for OPTIONS)
@@ -163,7 +174,7 @@ def handle_preflight():
     if request.method == "OPTIONS":
         response = jsonify({"status": "ok"})
         response.headers.add("Access-Control-Allow-Origin", request.headers.get("Origin", "http://localhost"))
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization,X-Requested-With")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization,X-Requested-With,ngrok-skip-browser-warning")
         response.headers.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
         response.headers.add("Access-Control-Allow-Credentials", "true")
         return response, 200
@@ -172,7 +183,9 @@ def handle_preflight():
 # Folders are created per-user via ensure_user_folders()
 
 # ----------------- Globals -----------------
-_user_indices = {}  # in-memory FAISS indices per user
+_user_indices = {}  # LEGACY: in-memory FAISS indices per user (global)
+_chat_indices = {}  # NEW: in-memory FAISS indices per CHAT {chat_id: {index, paragraphs...}}
+
 _user_bm25_indices = {}  # BM25 indices per user for keyword search
 
 _user_data_lock = threading.Lock()
@@ -496,6 +509,54 @@ def load_index_and_paragraphs(index_path: str, paragraphs_path: str, meta_path: 
         logger.exception("Failed to load persisted index/paragraphs/meta")
     return None, None, None
 
+def search_relevant_paragraphs_for_chat(user_id: int, chat_id: int, query: str, top_k: int = TOP_K) -> List[str]:
+    """Search within a specific chat's index."""
+    if not query or not chat_id:
+        return []
+    
+    with _user_data_lock:
+        chat_data = _chat_indices.get(chat_id)
+        
+        # If not in memory, try to load from disk
+        if not chat_data:
+            faiss_path = os.path.join(get_chat_data_path(user_id, chat_id, "indexes"), "faiss_index.bin")
+            paragraphs_path = os.path.join(get_chat_data_path(user_id, chat_id, "paragraphs"), "paragraphs.pkl")
+            meta_path = f"{faiss_path}.meta.pkl"
+            
+            if os.path.exists(faiss_path) and os.path.exists(paragraphs_path):
+                 # Pass None for expected_file_path to skip validation for now or implement logic to check latest file
+                 loaded = load_index_and_paragraphs(faiss_path, paragraphs_path, meta_path, None) 
+                 if loaded[0] is not None:
+                     index, paragraphs, meta = loaded
+                     _chat_indices[chat_id] = {
+                         "index": index, 
+                         "paragraphs": paragraphs, 
+                         "index_built_at": time.time(),
+                         "meta": meta
+                     }
+                     chat_data = _chat_indices[chat_id]
+
+    if not chat_data:
+        return []
+
+    index = chat_data.get("index")
+    paragraphs = chat_data.get("paragraphs")
+    if not index or not paragraphs:
+        return []
+
+    q_vec = _sent_transformer.encode([query], convert_to_numpy=True).astype("float32")
+    faiss.normalize_L2(q_vec)
+    q_vec = np.ascontiguousarray(q_vec)
+    distances, indices = index.search(q_vec, top_k)
+    hits = []
+    for idx in indices[0]:
+        if idx < 0 or idx >= len(paragraphs):
+            continue
+        hits.append(paragraphs[idx])
+    return hits
+
+
+# LEGACY GLOBAL SEARCH (kept for backward compatibility or global fallback)
 def search_relevant_paragraphs_for_user(user_id: int, query: str, top_k: int = TOP_K) -> List[str]:
     if not query:
         return []
@@ -546,9 +607,44 @@ def search_by_page(user_id: int, page_number: int, keyword: str = None) -> List[
     return results
 
 
+def search_by_page_in_chat(chat_id: int, page_number: int, keyword: str = None) -> List[Dict]:
+    """Search for content on a specific page in CHAT-SCOPED storage"""
+    with _user_data_lock:
+        chat_data = _chat_indices.get(chat_id)
+    
+    if not chat_data or not chat_data.get('paragraphs'):
+        return []
+    
+    paragraphs = chat_data.get('paragraphs', [])
+    results = []
+    
+    for para in paragraphs:
+        # Handle both old (string) and new (dict) format
+        if isinstance(para, dict):
+            if para.get('page_number') == page_number:
+                if keyword:
+                    if keyword.lower() in para.get('text', '').lower():
+                        results.append(para)
+                else:
+                    results.append(para)
+        elif isinstance(para, str):
+            # Old format - can't filter by page
+            continue
+    
+    return results
+
+
 def get_page_content(user_id: int, page_number: int) -> str:
-    """Get all content from a specific page"""
+    """Get all content from a specific page (LEGACY - searches user-level storage)"""
     results = search_by_page(user_id, page_number)
+    if results:
+        return "\n\n".join([r.get('text', '') if isinstance(r, dict) else r for r in results])
+    return f"No content found for page {page_number}"
+
+
+def get_page_content_from_chat(chat_id: int, page_number: int) -> str:
+    """Get all content from a specific page in chat-scoped storage"""
+    results = search_by_page_in_chat(chat_id, page_number)
     if results:
         return "\n\n".join([r.get('text', '') if isinstance(r, dict) else r for r in results])
     return f"No content found for page {page_number}"
@@ -559,33 +655,43 @@ def ask_model(context: str, query: str, client: OpenAI, model_name: str, stream:
         return "[LLM client not configured]"
 
     system_prompt = (
-        "You are an intelligent, accurate, and helpful AI assistant. Follow these guidelines:\n"
-        "**Accuracy First:** Always provide factually correct answers. Do not hallucinate. When unsure, clearly state uncertainty.\n"
-        "2. **Use Context:** Use any provided context to tailor your answer.\n"
-        "   - **IMPORTANT**: If the context contains real-time information (weather, Wikipedia data, current events), YOU MUST USE IT and present it as current, factual information.\n"
-        "   - When weather data is provided in the context (temperature, humidity, location), state it directly as the current weather.\n"
-        "   - When Wikipedia or real-time data is provided, use it to answer the question with current information.\n"
-        "   - DO NOT say 'I don't have access to real-time data' if real-time data is provided in the context above.\n"
-        "3. **Answer Style:**\n"
-        " - For complex or multi-part questions: use structured markdown with headings and bullet points.\n"
-        " - For simple questions (definitions, greetings, yes/no, casual chat): answer naturally in plain text.\n"
-        "4. **CODE FORMATTING (CRITICAL):**\n"
-        " - ALWAYS wrap code in fenced code blocks using triple backticks with the language name\n"
-        " - Format: ```python then code with proper indentation and newlines then ``` on new line\n"
-        " - NEVER put code in a single line - preserve all newlines and indentation\n"
-        " - Always specify language: python, javascript, java, html, css, sql, etc.\n"
-        "5. **Humor & Personality:** Add light humor or playful tone occasionally when the conversation is casual or friendly.\n"
-        "5. **Opinions:** Offer your best opinion when asked or when it adds value, clearly marking it as \"In my opinion:\"\n"
-        "6. **Conciseness & Completeness:** Be clear and complete without unnecessary verbosity.\n"
-        "7. **Adaptability:** Match tone and style to the context—professional for serious questions, casual for normal conversation.\n"
-        "8. **References:** Provide sources when relevant or asked.\n\n"
-        "Optional Example:\n"
-        "- Simple greeting → \"Hi! How's it going?\"\n"
-        "- Definition → Concise paragraph\n"
-        "- Complex explanation → Structured markdown\n"
-        "- Opinion → Prefixed with \"In my opinion:\"\n"
-        "- Weather query with context → \"The current weather in [location] is [temp]°C, [conditions]. Humidity is [X]%.\"\n"
-        "9. Developed by Team of University of Sindh Students batch 2k22 included as Afzal Khan, Ghulam Murtaza and Noor Rasheed Ahmed."
+        "You are an intelligent, accurate, and helpful AI assistant. Follow these strictly prioritized guidelines:\n\n"
+        "1. **PRIORITY SOURCE: CONTEXT/DOCUMENTS (CRITICAL)**\n"
+        "   - **ALWAYS** check any provided context/documents first (uploaded files, chat history, or provided text).\n"
+        "   - If the answer is found in the context, use it as the primary source of truth.\n"
+        "   - If context contains relevant real‑time information (e.g., weather, Wikipedia extracts), use it directly.\n\n"
+        "2. **EXTERNAL KNOWLEDGE FALLBACK (SECONDARY)**\n"
+        "   - If the answer is **NOT** in the context, you may use your internal knowledge base (cut‑off: January 2024).\n"
+        "   - **DO NOT** make up facts, dates, or events. If unsure, state clearly that you don’t know.\n"
+        "   - When providing external information (e.g., historical facts, date conversions), ensure high accuracy. For future dates, use reliable calculation methods and note any possible variations.\n\n"
+        "3. **ROBUST UNDERSTANDING**\n"
+        "   - Users may make typos, use informal language, or skip words. Infer their intent (e.g., 'sumarise ths pdf' -> 'Summarize this PDF').\n"
+        "   - Do not complain about spelling; just answer the intended question.\n"
+        "   - Use conversation history to resolve ambiguous references like 'it', 'that', or 'the file'.\n\n"
+        "4. **DATA PRIVACY OVERRIDE (IMPORTANT)**\n"
+        "   - The context may contain the user’s own data (uploaded files/chat history).\n"
+        "   - You are **AUTHORIZED** to extract and show personal details (Phone Numbers, CNICs, IDs, Emails, Addresses) found in the context.\n"
+        "   - This is not a privacy violation because the data belongs to the user.\n\n"
+        "5. **ACCURACY FIRST – NO HALLUCINATIONS**\n"
+        "   - Always provide factually correct answers. Do not invent or guess information.\n\n"
+        "6. **ANSWER STYLE & FORMATTING**\n"
+        "   - **Structured responses**: For complex questions, use markdown (tables, lists, headings).\n"
+        "   - **Casual chat**: Answer naturally and conversationally.\n"
+        "   - **Code formatting (CRITICAL)**:\n"
+        "     - Always wrap code in fenced code blocks with the language specified.\n"
+        "     - Format: ```python\\n# code with proper indentation and newlines\\n```\n"
+        "     - **NEVER** place code in a single line; preserve all newlines and indentation.\n"
+        "     - Specify the language (python, javascript, java, html, css, sql, etc.).\n"
+        "   - **Opinions**: When asked or when it adds value, offer your best opinion, clearly marking it as 'In my opinion:'\n"
+        "   - **Conciseness & Completeness**: Be clear and complete without unnecessary verbosity.\n"
+        "   - **Page-specific queries**: If the user asks about a specific page, answer based on the content of that page only.\n"
+        "   - **page extraction**: If the user asks about a specific page, extract the content of that page and answer the question.\n"
+        "   - **References**: Provide sources when relevant or requested.\n\n"
+        "7. **ADAPTABILITY & TONE**\n"
+        "   - Match tone and style to the context—professional for serious questions, casual for normal conversation.\n"
+        "   - Add light humor or a playful tone occasionally when the conversation is casual or friendly.\n\n"
+        "8. **DEVELOPED BY**\n"
+        "   - Team of University of Sindh Students batch 2k22, including Afzal Khan, Ghulam Murtaza, and Noor Rasheed Ahmed."
     )
     if len(context) > MAX_CONTEXT_CHARS:
         context = context[:MAX_CONTEXT_CHARS] + " ... (truncated)"
@@ -659,7 +765,25 @@ def build_index_from_file(file_path: str):
     index = create_faiss_index(embeddings)
     return index, paragraphs, embeddings
 
-# Build index for a user (keeps in-memory)
+# Build index for a CHAT
+def build_index_for_chat(user_id: int, chat_id: int, file_path: str) -> Tuple[faiss.Index, List[str], np.ndarray]:
+    paragraphs = extract_text_from_file(file_path)
+    if not paragraphs:
+        raise RuntimeError("No text extracted from file")
+    embeddings, model = embed_paragraphs(paragraphs, MODEL_PATH)
+    index = create_faiss_index(embeddings)
+    
+    with _user_data_lock:
+        _chat_indices.setdefault(chat_id, {})
+        _chat_indices[chat_id]["index"] = index
+        _chat_indices[chat_id]["paragraphs"] = paragraphs
+        _chat_indices[chat_id]["embeddings"] = embeddings
+        _chat_indices[chat_id]["index_built_at"] = time.time()
+        _chat_indices[chat_id]["file_path"] = file_path
+        
+    return index, paragraphs, embeddings
+
+# Build index for a user (LEGACY)
 def build_index_for_user(user_id: int, file_path: str) -> Tuple[faiss.Index, List[str], np.ndarray]:
     paragraphs = extract_text_from_file(file_path)
     if not paragraphs:
@@ -1584,13 +1708,22 @@ def upload_file():
             logger.warning(f"File upload failed for user {request.user_id}: File too large ({file_length} bytes)")
             return jsonify({"error": "File too large"}), 400
 
-        # Use new user_data folder structure
-        user_paths = ensure_user_folders(request.user_id)
-        user_upload_dir = user_paths["uploads"]
+        # Use NEW CHAT-SCOPED folder structure if chat_id provided
+        chat_id = request.form.get('chat_id')
+        
+        if chat_id:
+            chat_id = int(chat_id)
+            user_paths = ensure_chat_folders(request.user_id, chat_id)
+            user_upload_dir = user_paths["uploads"]
+        else:
+            # Fallback to legacy global user folder if no chat_id (shouldn't happen in new UI)
+            user_paths = ensure_user_folders(request.user_id)
+            user_upload_dir = user_paths["uploads"]
+            
         filename = secure_filename(file.filename)
         filepath = os.path.join(user_upload_dir, filename)
         file.save(filepath)
-        logger.info(f"File '{filename}' saved to '{filepath}' for user {request.user_id}")
+        logger.info(f"File '{filename}' saved to '{filepath}' for user {request.user_id} (Chat {chat_id})")
 
         file_extension = filename.split('.')[-1].lower()
         meta = {"file_path": os.path.abspath(filepath), "file_type": file_extension, "built_at": time.time()}
@@ -1602,64 +1735,86 @@ def upload_file():
         # If it's an image -> OCR + description
         if file_extension in ALLOWED_IMAGE_EXT:
             logger.info(f"Processing image file '{filename}' for user {request.user_id}")
-            extracted_text = extract_text_from_image(filepath)  # FIXED: Now uses your VisionHandler
+            extracted_text = extract_text_from_image(filepath)  
             try:
                 image_description = describe_image(filepath)
             except Exception:
-                logger.exception(f"Failed to describe image '{filename}' for user {request.user_id}")
+                logger.exception(f"Failed to describe image '{filename}'")
                 image_description = ""
-            # prefer OCR text for paragraphs, but include description always
+            
             if extracted_text:
-            # include OCR text and an AI-generated description paragraph
                 paragraphs = [p for p in ((extracted_text + "\n\n" + image_description).split("\n\n")) if p.strip()]
             elif image_description:
                 paragraphs = [image_description]
             else:
                 paragraphs = [f"Image uploaded: {filename}"]
-            # build index from these paragraphs (do not raise if OCR empty)
+            
             embeddings, _ = embed_paragraphs(paragraphs, MODEL_PATH)
             index = create_faiss_index(embeddings)
-            # keep in-memory for user
-            with _user_data_lock:
-                _user_indices.setdefault(request.user_id, {})
-                _user_indices[request.user_id]["index"] = index
-                _user_indices[request.user_id]["paragraphs"] = paragraphs
-                _user_indices[request.user_id]["embeddings"] = embeddings
-                _user_indices[request.user_id]["index_built_at"] = time.time()
-                _user_indices[request.user_id]["file_path"] = os.path.abspath(filepath)
-
-            # persist user-specific index+paragraphs in user_data folder
-            user_index_path = os.path.join(get_user_data_path(request.user_id, "indexes"), "faiss_index.bin")
-            user_paragraphs_path = os.path.join(get_user_data_path(request.user_id, "paragraphs"), "paragraphs.pkl")
-            user_meta_path = f"{user_index_path}.meta.pkl"
-            persist_index_and_paragraphs(index, paragraphs, user_index_path, user_paragraphs_path, user_meta_path, meta)
-            logger.info(f"Image '{filename}' indexed for user {request.user_id}. OCR text length: {len(extracted_text)}, Description length: {len(image_description)}")
+            
+            # Persist and Cache
+            if chat_id:
+                # Chat Scoped
+                with _user_data_lock:
+                    _chat_indices.setdefault(chat_id, {})
+                    _chat_indices[chat_id]["index"] = index
+                    _chat_indices[chat_id]["paragraphs"] = paragraphs
+                    _chat_indices[chat_id]["embeddings"] = embeddings
+                    _chat_indices[chat_id]["index_built_at"] = time.time()
+                    _chat_indices[chat_id]["file_path"] = os.path.abspath(filepath)
+                
+                idx_path = os.path.join(get_chat_data_path(request.user_id, chat_id, "indexes"), "faiss_index.bin")
+                para_path = os.path.join(get_chat_data_path(request.user_id, chat_id, "paragraphs"), "paragraphs.pkl")
+                meta_path = f"{idx_path}.meta.pkl"
+                persist_index_and_paragraphs(index, paragraphs, idx_path, para_path, meta_path, meta)
+            else:
+                # Legacy User Scoped
+                with _user_data_lock:
+                    _user_indices.setdefault(request.user_id, {})
+                    _user_indices[request.user_id]["index"] = index
+                    _user_indices[request.user_id]["paragraphs"] = paragraphs
+                    _user_indices[request.user_id]["embeddings"] = embeddings
+                    _user_indices[request.user_id]["index_built_at"] = time.time()
+                    _user_indices[request.user_id]["file_path"] = os.path.abspath(filepath)
+                
+                idx_path = os.path.join(get_user_data_path(request.user_id, "indexes"), "faiss_index.bin")
+                para_path = os.path.join(get_user_data_path(request.user_id, "paragraphs"), "paragraphs.pkl")
+                meta_path = f"{idx_path}.meta.pkl"
+                persist_index_and_paragraphs(index, paragraphs, idx_path, para_path, meta_path, meta)
+            
+            logger.info(f"Image '{filename}' indexed for user {request.user_id}. OCR len: {len(extracted_text)}")
 
         else:
-            # Non-image -> existing pipeline (pdf/txt/docx etc.)
+            # Non-image
             logger.info(f"Processing non-image file '{filename}' for user {request.user_id}")
-            # reuse build_index_for_user semantics but avoid raising on images earlier
             try:
-                index, paragraphs, embeddings = build_index_for_user(request.user_id, filepath)
-                # persist user index in user_data folder
-                user_index_path = os.path.join(get_user_data_path(request.user_id, "indexes"), "faiss_index.bin")
-                user_paragraphs_path = os.path.join(get_user_data_path(request.user_id, "paragraphs"), "paragraphs.pkl")
-                user_meta_path = f"{user_index_path}.meta.pkl"
-                persist_index_and_paragraphs(index, paragraphs, user_index_path, user_paragraphs_path, user_meta_path, meta)
-                logger.info(f"File '{filename}' indexed for user {request.user_id}. {len(paragraphs)} paragraphs extracted.")
+                if chat_id:
+                    index, paragraphs, embeddings = build_index_for_chat(request.user_id, chat_id, filepath)
+                    idx_path = os.path.join(get_chat_data_path(request.user_id, chat_id, "indexes"), "faiss_index.bin")
+                    para_path = os.path.join(get_chat_data_path(request.user_id, chat_id, "paragraphs"), "paragraphs.pkl")
+                    meta_path = f"{idx_path}.meta.pkl"
+                    persist_index_and_paragraphs(index, paragraphs, idx_path, para_path, meta_path, meta)
+                else:
+                    index, paragraphs, embeddings = build_index_for_user(request.user_id, filepath)
+                    idx_path = os.path.join(get_user_data_path(request.user_id, "indexes"), "faiss_index.bin")
+                    para_path = os.path.join(get_user_data_path(request.user_id, "paragraphs"), "paragraphs.pkl")
+                    meta_path = f"{idx_path}.meta.pkl"
+                    persist_index_and_paragraphs(index, paragraphs, idx_path, para_path, meta_path, meta)
+                
+                logger.info(f"File '{filename}' indexed.")
             except RuntimeError as e:
-                # maintain behavior: if no text extracted from non-image we raise
-                logger.warning(f"Non-image file '{filename}' for user {request.user_id}: no text extracted. Error: {e}")
+                logger.warning(f"No text extracted: {e}")
                 return jsonify({"error": "No text extracted from file"}), 400
 
         # store record in DB
         db = get_db_connection()
         cursor = db.cursor()
-        cursor.execute("INSERT INTO user_files (user_id, filename, filepath, file_type, uploaded_at) VALUES (%s, %s, %s, %s, NOW())",
-                       (request.user_id, filename, filepath, file_extension))
+        # Add chat_id to INSERT
+        cursor.execute("INSERT INTO user_files (user_id, filename, filepath, file_type, uploaded_at, chat_id) VALUES (%s, %s, %s, %s, NOW(), %s)",
+                       (request.user_id, filename, filepath, file_extension, chat_id if chat_id else None))
         db.commit()
         cursor.close(); db.close()
-        logger.info(f"File '{filename}' record saved to DB for user {request.user_id}")
+        logger.info(f"File '{filename}' record saved to DB")
 
         result = {
             "message": "File uploaded successfully",
@@ -1667,7 +1822,8 @@ def upload_file():
             "filepath": filepath,
             "file_type": file_extension,
             "extracted_text": extracted_text,
-            "image_description": image_description
+            "image_description": image_description,
+            "chat_id": chat_id
         }
         return jsonify(result), 200
     except Exception:
@@ -1769,6 +1925,27 @@ def get_user_pdfs():
     except Exception:
         logger.exception("Failed to get user PDFs")
         return jsonify({"error": "Failed to get user PDFs"}), 500
+    
+@app.route("/get_chat_files/<int:chat_id>", methods=["GET"])
+@token_required
+def get_chat_files(chat_id):
+    """Get all files uploaded to a specific chat"""
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        # Verify chat ownership
+        cursor.execute("SELECT id FROM chats WHERE id = %s AND user_id = %s", (chat_id, request.user_id))
+        if not cursor.fetchone():
+            cursor.close(); db.close()
+            return jsonify({"error": "Chat not found"}), 404
+            
+        cursor.execute("SELECT id, filename, uploaded_at, file_type FROM user_files WHERE chat_id = %s ORDER BY uploaded_at DESC", (chat_id,))
+        files = cursor.fetchall()
+        cursor.close(); db.close()
+        return jsonify(files)
+    except Exception:
+        logger.exception("Failed to get chat files")
+        return jsonify({"error": "Failed to get chat files"}), 500
     
 
 @app.route("/analyze", methods=["POST"])
@@ -1885,48 +2062,200 @@ def answer_question():
         cursor.execute("INSERT INTO messages (chat_id, sender, text) VALUES (%s, %s, %s)", (chat_id, "user", query))
         db.commit()
         user_message_id = cursor.lastrowid
-
-
-
-        # get or build per-user index if available
-        with _user_data_lock:
-            user_has_index = request.user_id in _user_indices
-            if user_has_index:
-                user_data = _user_indices[request.user_id]
-                index = user_data.get("index")
-                paragraphs = user_data.get("paragraphs")
-                file_path = user_data.get("file_path", "")
-            else:
-                index = paragraphs = file_path = None
-
-        # attempt to load persisted index if not present (from new user_data folder)
-        if not user_has_index:
-            faiss_path = os.path.join(get_user_data_path(request.user_id, "indexes"), "faiss_index.bin")
-            paragraphs_path = os.path.join(get_user_data_path(request.user_id, "paragraphs"), "paragraphs.pkl")
-            meta_path = f"{faiss_path}.meta.pkl"
-            cursor.execute("SELECT filepath FROM user_files WHERE user_id = %s ORDER BY uploaded_at DESC LIMIT 1", (request.user_id,))
-            row = cursor.fetchone()
-            expected_file_path = row[0] if row else None
-            if expected_file_path and os.path.exists(faiss_path) and os.path.exists(paragraphs_path) and os.path.exists(meta_path):
-                loaded = load_index_and_paragraphs(faiss_path, paragraphs_path, meta_path, expected_file_path)
-                if loaded[0] is not None:
-                    index, paragraphs, meta = loaded
-                    file_path = meta.get("file_path", "") if meta else None
-                    with _user_data_lock:
-                        _user_indices[request.user_id] = {"index": index, "paragraphs": paragraphs, "file_path": file_path, "index_built_at": time.time()}
-                    logger.info("Loaded user-specific index from disk for user %s", request.user_id)
+        
+        # ----------------- COMMAND PARSING -----------------
+        # Verify if user wants to MERGE knowledge from another chat
+        if query.strip().startswith("/merge"):
+            try:
+                # Parse command: /merge [Chat Name or ID]
+                command_parts = query.strip().split(" ", 1)
+                
+                if len(command_parts) < 2:
+                    ai_response = "Please specify the chat name or ID you want to merge. Example: `/merge General Chat`"
                 else:
-                    logger.info("User-specific FAISS index exists but did not match uploaded file; rebuilding recommended.")
+                    target_identifier = command_parts[1].strip()
+                    logger.info(f"User {request.user_id} requested merge from '{target_identifier}'")
+
+                    # Find the chat ID from the name/ID
+                    target_chat_id = None
+                    
+                    # Try as ID first
+                    if target_identifier.isdigit():
+                        cursor.execute("SELECT id FROM chats WHERE id = %s AND user_id = %s", (int(target_identifier), request.user_id))
+                        row = cursor.fetchone()
+                        if row:
+                            target_chat_id = row[0]
+                    
+                    # If not ID or not found, try as Title
+                    if not target_chat_id:
+                        cursor.execute("SELECT id FROM chats WHERE title LIKE %s AND user_id = %s LIMIT 1", (f"%{target_identifier}%", request.user_id))
+                        row = cursor.fetchone()
+                        if row:
+                            target_chat_id = row[0]
+                            
+                    if not target_chat_id:
+                        ai_response = f"I couldn't find a chat named '{target_identifier}'. Please check the name and try again."
+                    elif target_chat_id == chat_id:
+                        ai_response = "You are already in this chat! Merge canceled."
+                    else:
+                        # PERFORM MERGE
+                        # 1. Retrieve Historical Messages from Target Chat
+                        # Use dict cursor for column access
+                        merge_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                        merge_cursor.execute("SELECT sender, text FROM messages WHERE chat_id = %s ORDER BY created_at ASC", (target_chat_id,))
+                        history = merge_cursor.fetchall()
+                        merge_cursor.close()
+
+                        if not history:
+                            ai_response = f"Chat '{target_identifier}' has no history to merge."
+                        else:
+                            # Format history
+                            knowledge_text = f"--- IMPORTED KNOWLEDGE FROM CHAT {target_chat_id} ({target_identifier}) ---\n\n"
+                            for msg in history:
+                                knowledge_text += f"{msg['sender'].upper()}: {msg['text']}\n\n"
+
+                            # 2. Add to Current Chat's Vector Index
+                            new_paragraphs = [p.strip() for p in knowledge_text.split("\n\n") if p.strip()]
+
+                            with _user_data_lock:
+                                # Ensure current chat has an entry
+                                _chat_indices.setdefault(chat_id, {"index": None, "paragraphs": [], "embeddings": None})
+                                current_data = _chat_indices[chat_id]
+                                current_index = current_data.get("index")
+                                current_paras = current_data.get("paragraphs", [])
+
+                                # Embed NEW paragraphs
+                                new_embeddings, _ = embed_paragraphs(new_paragraphs, MODEL_PATH)
+
+                                # Merge logic
+                                if current_index is None:
+                                    current_index = create_faiss_index(new_embeddings)
+                                    current_paras = new_paragraphs
+                                else:
+                                    current_index.add(new_embeddings)
+                                    current_paras.extend(new_paragraphs)
+
+                                # Update Memory
+                                _chat_indices[chat_id]["index"] = current_index
+                                _chat_indices[chat_id]["paragraphs"] = current_paras
+                                _chat_indices[chat_id]["index_built_at"] = time.time()
+                                
+                                # Persist to disk
+                                user_paths = ensure_chat_folders(request.user_id, chat_id)
+                                idx_path = os.path.join(user_paths["indexes"], "faiss_index.bin")
+                                para_path = os.path.join(user_paths["paragraphs"], "paragraphs.pkl")
+                                meta_path = f"{idx_path}.meta.pkl"
+                                persist_index_and_paragraphs(current_index, current_paras, idx_path, para_path, meta_path, {})
+                            
+                            ai_response = f"✅ Successfully merged knowledge from **{target_identifier}**! I now have access to that conversation's history."
+
+                # Save AI response for the command
+                cursor.execute("INSERT INTO messages (chat_id, sender, text, context_type) VALUES (%s, %s, %s, %s)", (chat_id, "ai", ai_response, "command"))
+                db.commit()
+                message_id = cursor.lastrowid
+                cursor.close(); db.close()
+
+                return jsonify({
+                    "answer": ai_response,
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "user_message_id": user_message_id,
+                    "context_type": "command"
+                })
+
+            except Exception as e:
+                logger.exception("Merge command failed")
+                # Fallthrough to normal processing if command fails, or return error?
+                # Better to return error message as chat response
+                try:
+                    cursor.execute("INSERT INTO messages (chat_id, sender, text) VALUES (%s, %s, %s)", (chat_id, "ai", f"Error executing merge: {str(e)}"))
+                    db.commit()
+                except: pass
+                cursor.close(); db.close()
+                return jsonify({"answer": f"Error executing merge: {str(e)}", "chat_id": chat_id})
+
+        # ----------------- END COMMAND PARSING -----------------
+
+
+        # Initialize variables to prevent UnboundLocalError
+        index = None
+        paragraphs = None
+        file_path = None
+
+        # NEW: Chat-Scoped Index Loading
+        has_context_index = False
+        
+        # 1. Try to get CHAT-specific index
+        if chat_id:
+             logger.info(f"Attempting to load context for Chat ID: {chat_id}")
+             with _user_data_lock:
+                 if chat_id in _chat_indices:
+                     has_context_index = True
+                     index = _chat_indices[chat_id].get("index")
+                     paragraphs = _chat_indices[chat_id].get("paragraphs")
+                     logger.info(f"Context loaded from MEMORY for Chat {chat_id}. Paragraphs count: {len(paragraphs) if paragraphs else 0}")
+                     
+             if not has_context_index:
+                 # Try loading from disk (chat folder)
+                 user_paths = ensure_chat_folders(request.user_id, chat_id)
+                 faiss_path = os.path.join(user_paths["indexes"], "faiss_index.bin")
+                 paragraphs_path = os.path.join(user_paths["paragraphs"], "paragraphs.pkl")
+                 
+                 logger.info(f"Checking disk for context: {faiss_path}")
+                 if os.path.exists(faiss_path) and os.path.exists(paragraphs_path):
+                     loaded = load_index_and_paragraphs(faiss_path, paragraphs_path, f"{faiss_path}.meta.pkl", None)
+                     if loaded[0]:
+                         index, paragraphs, meta = loaded
+                         with _user_data_lock:
+                             _chat_indices[chat_id] = {
+                                 "index": index, "paragraphs": paragraphs,
+                                 "index_built_at": time.time()
+                             }
+                         has_context_index = True
+                         logger.info(f"Loaded chat-specific index for chat {chat_id} FROM DISK. Paragraphs: {len(paragraphs)}")
+                     else:
+                         logger.error(f"Failed to load index from disk for Chat {chat_id}")
+                 else:
+                     logger.warning(f"No index files found on disk for Chat {chat_id}")
+
+        # 2. Fallback to GLOBAL index only if no chat index and index didn't load
+        if not has_context_index:
+             logger.info("No chat context found. Falling back to legacy/global check (optional).")
+             pass
+
 
         # ENHANCED: Classify query and choose context intelligently
         query_intent = classify_query(query, has_documents=(index is not None and paragraphs))
         logger.info(f"Query classified as: {query_intent['type']}")
         
         # Handle different query types
+        # ----------------- CONTEXT CONSTRUCTION -----------------
+        # Fetch recent chat history (Short Term Memory)
+        chat_history_text = ""
+        if chat_id:
+            h_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            # Fetch last 100 messages for Deep Context
+            h_cursor.execute("SELECT sender, text FROM messages WHERE chat_id = %s ORDER BY created_at DESC LIMIT 100", (chat_id,))
+            recent_msgs = list(h_cursor.fetchall())
+            h_cursor.close()
+            # Reverse to chronological order
+            if recent_msgs:
+                recent_msgs.reverse()
+                chat_history_text = "\nRecent Conversation:\n" + "\n".join([f"{m['sender'].upper()}: {m['text']}" for m in recent_msgs]) + "\n"
+
         if query_intent['type'] == 'page_specific' and query_intent.get('page_number'):
             # Page-specific query - get content from that page
             page_num = query_intent['page_number']
-            page_content = get_page_content(request.user_id, page_num)
+            logger.info(f"Page-specific query detected for page {page_num}")
+            
+            # Try chat-scoped storage first
+            if chat_id and chat_id in _chat_indices:
+                page_content = get_page_content_from_chat(chat_id, page_num)
+                logger.info(f"Searched chat-scoped storage (chat {chat_id})")
+            else:
+                # Fallback to legacy user-level storage
+                page_content = get_page_content(request.user_id, page_num)
+                logger.info(f"Searched legacy user storage (user {request.user_id})")
             if page_content and not page_content.startswith("No content found"):
                 combined_context = personalization_prefix + f"Content from page {page_num}:\n\n{page_content[:MAX_CONTEXT_CHARS]}"
                 context_type = "file"
@@ -1987,7 +2316,7 @@ def answer_question():
                 logger.info(f"Weather API response: {weather_data}")  # DEBUG: See what API returns
                 
                 if weather_data.get('success'):
-                    combined_context = personalization_prefix + f"Current weather in {weather_data.get('location', location)}: {weather_data.get('temperature')}°C, {weather_data.get('description')}. Humidity: {weather_data.get('humidity')}%"
+                    combined_context = personalization_prefix + f"Current weather in {weather_data.get('location', location)}: {weather_data.get('temperature')}°C (Feels like: {weather_data.get('feels_like')}°C), {weather_data.get('description')}. Humidity: {weather_data.get('humidity')}%. Wind Speed: {weather_data.get('wind_speed')} m/s."
                     logger.info(f"Weather context set successfully")
                 else:
                     logger.warning(f"Weather API failed: {weather_data.get('error')} - {weather_data.get('description')}")
@@ -1995,17 +2324,93 @@ def answer_question():
                 context_type = "real_time"
             else:
                 # Try Wikipedia
-                wiki_result = search_wikipedia(query)
+                # Optimize query for better Wikipedia results
+                search_query = query
+                
+                # Special handling for Islamic/Date queries
+                if 'islamic' in query.lower() or 'hijri' in query.lower():
+                    # Extract year if present
+                    import re
+                    year_match = re.search(r'20\d{2}', query)
+                    
+                    if year_match:
+                        target_year = year_match.group(0)
+                        search_query = f"Islamic calendar {target_year}"
+                    else:
+                        # Context Awareness: Look for year in recent chat history
+                        target_year = None
+                        if chat_history_text:
+                            # Search reversed history (newest first) but regex finds first match
+                            history_year_match = re.search(r'20\d{2}', chat_history_text)
+                            if history_year_match:
+                                target_year = history_year_match.group(0)
+                                logger.info(f"Context Awareness: Found year {target_year} in chat history")
+                        
+                        if target_year:
+                             search_query = f"Islamic calendar {target_year}"
+                        else:
+                             # Default to current year if no context
+                             from datetime import datetime
+                             current_year = datetime.now().year
+                             search_query = f"Islamic calendar {current_year}"
+                             logger.info(f"No year found in query/context. Defaulting to current year: {current_year}")
+
+                    logger.info(f"Optimized Islamic Date query to: {search_query}")
+                
+                # General date queries
+                elif 'when is' in query.lower() or 'what date' in query.lower():
+                     # Try to extract the event name
+                     # e.g. "when is eid" -> "eid"
+                     # Simple heuristic: remove common words
+                     clean_q = re.sub(r'(when|is|what|date|the|in|on|year|corresponds|to|will|be)', '', query.lower())
+                     clean_q = clean_q.strip()
+                     if clean_q:
+                         search_query = clean_q
+                         logger.info(f"Optimized Date query to: {search_query}")
+
+                wiki_result = search_wikipedia(search_query)
                 if wiki_result.get('success'):
-                    combined_context = personalization_prefix + f"From Wikipedia:\n\n{wiki_result.get('summary', '')}"
+                    # For Islamic calendar queries, we want MORE content to ensure the specific date is covered
+                    # So we might want to fetch more sentences or the full summary
+                    combined_context = personalization_prefix + f"From Wikipedia ({search_query}):\n\n{wiki_result.get('summary', '')}"
                     context_type = "real_time"
                 else:
-                    combined_context = personalization_prefix + "Could not fetch real-time information."
-                    context_type = "general"
+                    # If optimized query failed, try original
+                     if search_query != query:
+                         wiki_result = search_wikipedia(query)
+                         if wiki_result.get('success'):
+                             combined_context = personalization_prefix + f"From Wikipedia:\n\n{wiki_result.get('summary', '')}"
+                             context_type = "real_time"
+                         else:
+                             combined_context = personalization_prefix + "Could not fetch real-time information."
+                             context_type = "general"
+                     else:
+                        combined_context = personalization_prefix + "Could not fetch real-time information."
+                        context_type = "general"
         
-        elif use_pdf_context and index is not None and paragraphs:
-            # Standard RAG query
-            relevant = search_relevant_paragraphs_for_user(request.user_id, query, top_k=TOP_K)
+        elif use_pdf_context:
+            # Standard RAG query (Chat Scoped > User Scoped)
+            relevant = []
+            
+            # Try chat scope first
+            if chat_id:
+                relevant = search_relevant_paragraphs_for_chat(request.user_id, chat_id, query, top_k=TOP_K)
+            
+            # Fallback to user scope if nothing in chat (Optional: or merge them?)
+            # For strict academic isolation, we should ONLY check chat scope if it has files.
+            # But for "mind boggling" merge, the merge command will put things into chat scope.
+            if not relevant:
+                # Fallback to legacy global ONLY if no chat index
+                relevant = search_relevant_paragraphs_for_user(request.user_id, query, top_k=TOP_K)
+
+            # RETRIEVAL FALLBACK: If no relevant paragraphs found but documents exist,
+            # force-feed the beginning of the document (up to 3000 chars) to allow generic questions.
+            if not relevant and paragraphs:
+                logger.info("Vector search found no matches - triggering Retrieval Fallback")
+                # Get first few paragraphs
+                fallback_text = "\n\n".join([p.get('text', '') if isinstance(p, dict) else str(p) for p in paragraphs[:5]])
+                relevant = [f"--- DOCUMENT PREVIEW (Fallback) ---\n{fallback_text}"]
+
             if relevant:
                 # Handle both dict (new format) and string (old format)
                 relevant_texts = [r.get('text', r) if isinstance(r, dict) else r for r in relevant]
@@ -2017,6 +2422,9 @@ def answer_question():
         else:
             combined_context = personalization_prefix + "You are a helpful AI assistant. Answer based on general knowledge."
             context_type = "general"
+            
+        # Append Chat History to Context
+        combined_context += chat_history_text
 
         if stream:
             # Streaming response
@@ -2370,7 +2778,7 @@ def manage_bookmarks():
 def export_bookmarks_endpoint():
     """Export bookmarks to PDF"""
     try:
-        data = request.get_json(force=True) or {}
+        data = request.get_json(silent=True) or {}
         bookmark_ids = data.get('bookmark_ids', None)  # None = all bookmarks
         
         db = get_db_connection()
@@ -2580,41 +2988,52 @@ def create_branch_endpoint():
         if not chat_id or not message_id:
             return jsonify({'error': 'chat_id and message_id required'}), 400
         
-        # Verify user owns this chat
-        db = get_db_connection()
-        cursor = db.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute("""
-            SELECT * FROM chats WHERE id = %s AND user_id = %s
-        """, (chat_id, request.user_id))
+        # Branch logic implementation would go here
+        # For now, just a placeholder
         
-        chat = cursor.fetchone()
-        
-        if not chat:
-            cursor.close()
-            db.close()
-            return jsonify({'error': 'Chat not found'}), 404
-        
-        # Create branch
-        branch_id = ConversationTree.create_branch(
-            db, chat_id, message_id, parent_message_id, branch_name
-        )
-        
-        cursor.close()
-        db.close()
-        
-        if branch_id:
-            return jsonify({
-                'success': True,
-                'branch_id': branch_id,
-                'message': 'Branch created',
-                'branch_name': branch_name
-            }), 201
-        else:
-            return jsonify({'error': 'Failed to create branch'}), 500
-    
+        return jsonify({'message': 'Branch created (placeholder)', 'branch_id': 'branch_new'}), 200
+
     except Exception as e:
         logger.exception(f"Create branch failed: {e}")
         return jsonify({'error': 'Failed to create branch'}), 500
+
+
+@app.route("/chat_file/<int:chat_id>/<filename>", methods=["GET"])
+@token_required
+def get_chat_file(chat_id, filename):
+    """Serve a specific file uploaded to a chat"""
+    try:
+        # Verify chat belongs to user
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute("SELECT user_id FROM chats WHERE id = %s", (chat_id,))
+        result = cursor.fetchone()
+        cursor.close()
+        db.close()
+        
+        if not result or str(result[0]) != str(request.user_id):
+            return jsonify({'error': 'Access denied'}), 403
+            
+        # Get chat file path
+        chat_folder = get_chat_data_path(int(request.user_id), int(chat_id))
+        
+        # Ensure secure filename and path
+        safe_filename = secure_filename(filename)
+        
+        # Check if file exists
+        file_path = os.path.join(chat_folder, safe_filename)
+        if not os.path.exists(file_path):
+             return jsonify({'error': 'File not found'}), 404
+             
+        # Serve file
+        return send_from_directory(chat_folder, safe_filename)
+        
+    except Exception as e:
+        logger.exception(f"Serving file failed: {e}")
+        return jsonify({'error': 'Failed to serve file'}), 500
+
+
+
 
 
 @app.route("/compare_branches", methods=["POST"])
@@ -2695,6 +3114,87 @@ def get_branch_path_endpoint(message_id):
 
 # ----------------- Run -----------------
 
+@app.route("/merge_chat", methods=["POST"])
+@token_required
+def merge_chat_knowledge():
+    """MERGE KNOWLEDGE: Import documents and history from another chat into the current chat."""
+    try:
+        data = request.get_json(force=True) or {}
+        target_chat_id = data.get("target_chat_id") # The chat we want to LEARN FROM
+        current_chat_id = data.get("current_chat_id") # The chat we are currently in
+        
+        if not target_chat_id or not current_chat_id:
+            return jsonify({"error": "Missing chat_ids"}), 400
+            
+        logger.info(f"Merging knowledge from Chat {target_chat_id} into Chat {current_chat_id} for user {request.user_id}")
+        
+        # 1. Retrieve Historical Messages from Target Chat
+        db = get_db_connection()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("SELECT sender, text FROM messages WHERE chat_id = %s ORDER BY created_at ASC", (target_chat_id,))
+        history = cursor.fetchall()
+        cursor.close(); db.close()
+        
+        if not history:
+            return jsonify({"error": "Source chat has no history or does not exist"}), 404
+            
+        # Format history as a "Knowledge Document"
+        knowledge_text = f"--- IMPORTED KNOWLEDGE FROM CHAT {target_chat_id} ---\n\n"
+        for msg in history:
+            knowledge_text += f"{msg['sender'].upper()}: {msg['text']}\n\n"
+            
+        # 2. Add to Current Chat's Vector Index
+        # Treat this big history text as a "file" upload essentially
+        new_paragraphs = [p.strip() for p in knowledge_text.split("\n\n") if p.strip()]
+        
+        # We need to lock and update the current chat's index
+        with _user_data_lock:
+            # Ensure current chat has an entry
+            _chat_indices.setdefault(current_chat_id, {
+                "index": None, "paragraphs": [], "embeddings": None
+            })
+            
+            # Get existing data or init new
+            current_data = _chat_indices[current_chat_id]
+            current_index = current_data.get("index")
+            current_paras = current_data.get("paragraphs", [])
+            
+            # Embed NEW paragraphs
+            new_embeddings, _ = embed_paragraphs(new_paragraphs, MODEL_PATH)
+            
+            # Merge logic
+            if current_index is None:
+                # Create fresh
+                current_index = create_faiss_index(new_embeddings)
+                current_paras = new_paragraphs
+            else:
+                # Add to existing FAISS
+                current_index.add(new_embeddings)
+                current_paras.extend(new_paragraphs)
+                
+            # Update Memory
+            _chat_indices[current_chat_id]["index"] = current_index
+            _chat_indices[current_chat_id]["paragraphs"] = current_paras
+            _chat_indices[current_chat_id]["index_built_at"] = time.time()
+            
+            # Persist to disk
+            user_paths = ensure_chat_folders(request.user_id, current_chat_id)
+            idx_path = os.path.join(user_paths["indexes"], "faiss_index.bin")
+            para_path = os.path.join(user_paths["paragraphs"], "paragraphs.pkl")
+            meta_path = f"{idx_path}.meta.pkl"
+            
+            persist_index_and_paragraphs(current_index, current_paras, idx_path, para_path, meta_path, {})
+            
+        return jsonify({
+            "success": True, 
+            "message": f"Successfully merged knowledge from Chat {target_chat_id}",
+            "paragraphs_added": len(new_paragraphs)
+        }), 200
+
+    except Exception as e:
+        logger.exception("Merge chat failed")
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, threaded=True, debug=True)
+    app.run(host="0.0.0.0", port=port, threaded=True, debug=False, use_reloader=False)

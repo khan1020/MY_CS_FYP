@@ -28,15 +28,15 @@
     }
 
     :root {
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --secondary: #8b5cf6;
-      --accent: #ec4899;
+      --primary: #1e3a8a;
+      --primary-dark: #1e40af;
+      --secondary: #3b82f6;
+      --accent: #d97706;
       --light: #f8fafc;
       --dark: #1e293b;
       --gray: #64748b;
       --success: #10b981;
-      --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+      --gradient: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
       --transition: all 0.3s ease;
     }
 
@@ -551,6 +551,25 @@
       border-radius: 15px;
       position: relative;
       animation: messageIn 0.3s ease;
+      /* Prevent overflow */
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    /* Markdown Code Blocks */
+    .message pre {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 10px 0;
+      max-width: 100%;
+    }
+
+    .message code {
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.9em;
     }
 
     @keyframes messageIn {
@@ -586,7 +605,7 @@
     }
 
     .message.ai li {
-      margin: -10px 0;
+      margin: 5px 0;
       break-inside: avoid;
     }
 
@@ -681,6 +700,44 @@
     .chat-action-btn:hover {
       background: var(--primary);
       color: white;
+    }
+
+    .chat-files-area {
+      padding: 10px 20px;
+      background: rgba(15, 23, 42, 0.4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-height: 20px; /* Collapse if empty, but keep structure */
+      display: none; /* Hidden by default until files loaded */
+    }
+    
+    .chat-files-area.has-files {
+      display: flex;
+    }
+
+    .file-chip {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.85rem;
+      color: var(--light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .file-chip:hover {
+      background: rgba(99, 102, 241, 0.4);
+      transform: translateY(-1px);
+    }
+    
+    .file-chip i {
+      color: var(--primary);
     }
 
     /* Message Timestamps */
@@ -2557,6 +2614,7 @@
     }
   </style>
 
+  <script src="config.js?v=2"></script>
   <script>
     <!-- // DOM Elements -->
     const sidebar = document.getElementById('sidebar');
@@ -2609,18 +2667,21 @@
       utterance.onstart = () => {
         voiceAiStatus.textContent = 'Speaking...';
         voiceAiIcon.className = 'fas fa-volume-up';
+        // Show stop button to allow interruption
+        voiceAiRecordBtn.style.display = 'none';
+        voiceAiStopBtn.style.display = 'flex';
       };
 
       utterance.onend = () => {
         if (voiceAiModal.classList.contains('show')) {
           startVoiceSpeechRecognition();
+        } else {
+            resetVoiceAiButtons();
         }
       };
-
-      utterance.onend = () => {
-        if (voiceAiModal.classList.contains('show')) {
-          startVoiceSpeechRecognition();
-        }
+      
+      utterance.onerror = () => {
+          resetVoiceAiButtons();
       };
 
       speechSynth.speak(utterance);
@@ -2758,6 +2819,7 @@
         voiceSpeechRecognition.abort();
         isVoiceRecording = false;
       }
+      if (speechSynth) speechSynth.cancel(); // Force stop speech
     }
 
     // Close modal events
@@ -2796,11 +2858,19 @@
     let voiceTranscript = '';
     let voiceSilenceTimer;
 
+    // Stop audio on page reload/navigation
+    window.addEventListener('beforeunload', () => {
+        if (speechSynth) speechSynth.cancel();
+    });
+
     function startVoiceSpeechRecognition() {
       if (!SpeechRecognition) {
         voiceAiStatus.textContent = 'Speech recognition not supported in this browser. Try Chrome.';
         return;
       }
+
+      // Interrupt AI if it's speaking
+      if (speechSynth) speechSynth.cancel();
 
       clearTimeout(voiceSilenceTimer);
 
@@ -2829,8 +2899,11 @@
             += event.results[i][0].transcript + ' ';
           } else { interimTranscript += event.results[i][0].transcript; }
         }
-        voiceAiTranscription.textContent = voiceTranscript + interimTranscript; clearTimeout(voiceSilenceTimer); if
-          (voiceTranscript.trim() || interimTranscript.trim()) {
+        voiceAiTranscription.textContent = voiceTranscript + interimTranscript; 
+        clearTimeout(voiceSilenceTimer); 
+        
+        // Auto-stop logic (unchanged)
+        if (voiceTranscript.trim() || interimTranscript.trim()) {
             voiceSilenceTimer = setTimeout(() => {
               stopVoiceSpeechRecognition();
             }, 2500);
@@ -2851,7 +2924,9 @@
         isVoiceRecording = false;
         voiceAiModal.classList.remove('recording');
         if (voiceTranscript.trim()) {
-          sendTranscribedTextToAI(voiceTranscript.trim());
+            // Processing... stop existing speech just in case
+            if (speechSynth) speechSynth.cancel();
+            sendTranscribedTextToAI(voiceTranscript.trim());
         } else {
           voiceAiStatus.textContent = 'No speech detected. Try again.';
           resetVoiceAiButtons();
@@ -2863,11 +2938,14 @@
 
 
     function stopVoiceSpeechRecognition() {
+        // Stop Everything Function
       if (voiceSpeechRecognition && isVoiceRecording) {
         voiceSpeechRecognition.stop();
         voiceAiStatus.textContent = 'Processing...';
         voiceAiIcon.className = 'fas fa-spinner fa-spin';
       }
+      // ALSO Stop AI Speech
+      if (speechSynth) speechSynth.cancel();
     }
 
     function resetVoiceAiButtons() {
@@ -2938,12 +3016,18 @@
 
     // Your Flask RAG API Configuration
     // Switch easily between local and ngrok
-    const BASE_URL = window.location.hostname === "localhost"
-      ? "http://localhost:5000"
-      : "https://e13febe3a5e1.ngrok-free.app";
+    // Use centralized configuration
+    const BASE_URL = window.API_CONFIG ? window.API_CONFIG.BACKEND_URL : "http://localhost:5000";
+
 
 
     async function fetchJsonWithFallback(url, options) {
+      if (!options.headers) {
+          options.headers = {};
+      }
+      if (BASE_URL.includes('ngrok')) {
+          options.headers['ngrok-skip-browser-warning'] = 'true';
+      }
       const res = await fetch(url, options);
       const text = await res.text(); // always read raw text first
       try {
@@ -3089,11 +3173,16 @@
       }
 
       try {
+        const headers = {
+            'Authorization': `Bearer ${token}`
+        };
+        if (BASE_URL.includes('ngrok')) {
+            headers['ngrok-skip-browser-warning'] = 'true';
+        }
+
         const response = await fetch(`${BASE_URL}/chats`, {
           method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: headers
         });
 
         if (response.ok) {
@@ -3113,17 +3202,79 @@
       }
     }
 
+    async function setImageWithAuth(imgElement, url, forceRefresh = false) {
+        if (!url) {
+            imgElement.src = 'https://dummyimage.com/160x160/6366f1/ffffff&text=U';
+            return;
+        }
+
+        // If it's a dummy image or external URL, just set it
+        if (url.startsWith('http') && !url.includes('ngrok') && !url.includes(BASE_URL)) {
+            imgElement.src = url;
+            return;
+        }
+
+        try {
+            // Construct full URL if relative
+            const fullUrl = url.startsWith('http') ? url : `${BASE_URL}${url}`;
+            
+            const headers = {};
+            // Add ngrok header if needed
+            if (typeof BASE_URL !== 'undefined' && BASE_URL.includes('ngrok')) {
+                headers['ngrok-skip-browser-warning'] = 'true';
+            }
+            
+            // Add cache busting only if forced
+            const fetchUrl = forceRefresh ? `${fullUrl}?t=${new Date().getTime()}` : fullUrl;
+
+            const response = await fetch(fetchUrl, { headers });
+            
+            if (!response.ok) {
+                    // If forced refresh failed, try normal URL as fallback
+                    if (forceRefresh) {
+                        const retryResponse = await fetch(fullUrl, { headers });
+                        if(!retryResponse.ok) throw new Error('Image load failed');
+                        const blob = await retryResponse.blob();
+                        const objectUrl = URL.createObjectURL(blob);
+                        if (imgElement.src.startsWith('blob:')) URL.revokeObjectURL(imgElement.src);
+                        imgElement.src = objectUrl;
+                        return;
+                    }
+                    throw new Error('Image load failed');
+            }
+
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            
+            // Revoke old URL to avoid memory leaks if it was a blob
+            if (imgElement.src.startsWith('blob:')) {
+                URL.revokeObjectURL(imgElement.src);
+            }
+            
+            imgElement.src = objectUrl;
+        } catch (error) {
+            console.error('Error loading image:', error);
+            // Fallback
+            imgElement.src = 'https://dummyimage.com/160x160/6366f1/ffffff&text=Error';
+        }
+    }
+
     // Load user profile and update profile picture
     async function loadUserProfile() {
       const token = localStorage.getItem('authToken');
       if (!token) return;
 
       try {
+        const headers = {
+            'Authorization': `Bearer ${token}`
+        };
+        if (BASE_URL.includes('ngrok')) {
+            headers['ngrok-skip-browser-warning'] = 'true';
+        }
+
         const response = await fetch(`${BASE_URL}/profile`, {
           method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: headers
         });
 
         if (response.ok) {
@@ -3132,7 +3283,7 @@
           if (profile.profile_picture) {
             const profileImg = document.getElementById('profileToggle');
             if (profileImg) {
-              profileImg.src = BASE_URL + profile.profile_picture;
+              await setImageWithAuth(profileImg, profile.profile_picture);
             }
           }
           // Store user info locally
@@ -3148,6 +3299,11 @@
 
     profileToggle.addEventListener("click", () => {
       profileMenu.style.display = profileMenu.style.display === "block" ? "none" : "block";
+    });
+
+    // Refresh profile when page becomes visible (e.g. back from profile page)
+    window.addEventListener('pageshow', () => {
+        loadUserProfile();
     });
 
     // Close dropdown if clicked outside
@@ -3238,6 +3394,13 @@
     // Create a new chat
     // Create a new chat
     function createNewChat() {
+      // Prevent duplicate empty chats
+      if (chats.length > 0 && chats[0].title === "New Chat" && chats[0].messages.length <= 1) {
+          // Already have an empty new chat, just switch to it
+          loadChat(chats[0].id);
+          return;
+      }
+      
       const chatId = Date.now().toString();
       // Use temporary title that will be updated by the backend
       const chatTitle = "New Chat";
@@ -3280,6 +3443,11 @@
           console.log(`[DEBUG loadChat] Message ${idx}:`, message.sender, message.text?.substring(0, 100) + '...');
           addMessageToUI(message.text, message.sender);
         });
+        
+        // Load files for this chat
+        loadChatFiles(chatId);
+
+
 
 
 
@@ -3300,11 +3468,16 @@
       try {
         console.log(`[DEBUG loadChat] Fetching from: ${BASE_URL}/get_messages/${chatId}`);
         // Fetch messages for this specific chat from backend
+        const headers = {
+            'Authorization': `Bearer ${token}`
+        };
+        if (BASE_URL.includes('ngrok')) {
+            headers['ngrok-skip-browser-warning'] = 'true';
+        }
+
         const response = await fetch(`${BASE_URL}/get_messages/${chatId}`, {
           method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: headers
         });
         
         console.log('[DEBUG loadChat] Response status:', response.status);
@@ -3400,7 +3573,7 @@
           chatItem.classList.add('active');
         }
         chatItem.innerHTML = `
-          <div class="chat-title">${chat.title}</div>
+          <div class="chat-title" title="${chat.title}">${chat.title}</div>
           <div class="chat-actions">
             <button class="chat-menu-btn">...</button>
             <div class="chat-menu">
@@ -3555,6 +3728,7 @@
       }
 
       if (!chats[chatIndex].messages) chats[chatIndex].messages = [];
+      if (chats[chatIndex].messages.length === 0) isNewChat = true;
       chats[chatIndex].messages.push({
         sender: 'user',
         text: message,
@@ -3746,14 +3920,13 @@
         });
 
         // Update chat title if this was a new chat and we received a title
-        if (isNewChat && receivedChatTitle) {
-          chats[chatIndex].title = receivedChatTitle;
-          currentChatTitle.textContent = receivedChatTitle;
-        } else if (isNewChat && !receivedChatTitle) {
-          // Fallback: generate a title from the first message
-          const generatedTitle = generateTitleFromMessage(message);
-          chats[chatIndex].title = generatedTitle;
-          currentChatTitle.textContent = generatedTitle;
+        // Update chat title if this was a new chat
+        if (isNewChat) {
+            const finalTitle = receivedChatTitle || generateTitleFromMessage(message);
+            // Delay renaming by 3 seconds then animate
+            setTimeout(() => {
+                animateChatRenaming(chatIndex, finalTitle);
+            }, 3000);
         }
         
         // CRITICAL FIX: Update chat ID if backend returned a different one
@@ -3776,6 +3949,41 @@
       }
     }
 
+    // Load files for a chat
+    async function loadChatFiles(chatId) {
+        const filesArea = document.getElementById('chatFilesArea');
+        if (!filesArea) return;
+        
+        filesArea.innerHTML = '';
+        filesArea.classList.remove('has-files');
+        
+        const token = localStorage.getItem('authToken');
+        if (!token) return;
+
+        try {
+            const response = await fetch(`${BASE_URL}/get_chat_files/${chatId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.files && data.files.length > 0) {
+                    filesArea.classList.add('has-files');
+                    data.files.forEach(file => {
+                        const fileLink = document.createElement('a');
+                        fileLink.className = 'file-chip';
+                        fileLink.href = `${BASE_URL}/chat_file/${chatId}/${file.filename}`;
+                        fileLink.target = '_blank';
+                        fileLink.innerHTML = `<i class="fas fa-file-pdf"></i> ${file.filename}`;
+                        filesArea.appendChild(fileLink);
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Failed to load chat files:", e);
+        }
+    }
+
     // Helper function to generate a fallback title from the message
     function generateTitleFromMessage(message) {
       // Simple fallback: take first 4-5 words or first 30 characters
@@ -3787,6 +3995,70 @@
     }
 
 
+
+    // Animate chat renaming (Typewriter effect)
+    function animateChatRenaming(chatIndex, newTitle) {
+        if (!chats[chatIndex]) return;
+
+        // Update data immediately for safety/persistence
+        chats[chatIndex].title = newTitle;
+        saveChats();
+
+        // 1. Animate Sidebar Item
+        const chatItem = document.querySelector(`.chat-item[data-chat-id="${chats[chatIndex].id}"]`);
+        if (chatItem) {
+            const titleEl = chatItem.querySelector('.chat-title');
+            if (titleEl) {
+                titleEl.textContent = ''; // Clear
+                let i = 0;
+                const typeWriter = () => {
+                    if (i < newTitle.length) {
+                        titleEl.textContent += newTitle.charAt(i);
+                        i++;
+                        setTimeout(typeWriter, 50); // Speed: 50ms per char
+                    }
+                };
+                typeWriter();
+            }
+        } else {
+            // Sidebar item might not exist yet if it's a new chat, force render
+            renderChatHistory();
+            // Try again after render
+             setTimeout(() => {
+                const retryItem = document.querySelector(`.chat-item[data-chat-id="${chats[chatIndex].id}"]`);
+                if (retryItem) {
+                     const titleEl = retryItem.querySelector('.chat-title');
+                     if (titleEl) {
+                        titleEl.textContent = '';
+                        let i = 0;
+                        const typeWriter = () => {
+                            if (i < newTitle.length) {
+                                titleEl.textContent += newTitle.charAt(i);
+                                i++;
+                                setTimeout(typeWriter, 50);
+                            }
+                        };
+                        typeWriter();
+                     }
+                }
+             }, 100);
+        }
+
+        // 2. Animate Header Title if active
+        // Only if it's the current chat
+        if (chats[chatIndex].id === currentChatId) {
+            currentChatTitle.textContent = '';
+            let j = 0;
+            const headerTypeWriter = () => {
+                if (j < newTitle.length) {
+                    currentChatTitle.textContent += newTitle.charAt(j);
+                    j++;
+                    setTimeout(headerTypeWriter, 50);
+                }
+            };
+            headerTypeWriter();
+        }
+    }
 
     // Rename chat
     function renameChat(chatId, newTitle) {
@@ -4780,7 +5052,7 @@
     <script>
         // Global variables for new features
         let currentMessageId = null;
-        const API_BASE = 'http://localhost:5000';  // Absolute path for XAMPP + Flask
+        const API_BASE = window.API_CONFIG ? window.API_CONFIG.BACKEND_URL : 'http://localhost:5000';
         const authToken = localStorage.getItem('authToken');
 
         // ============= Query History =============
@@ -4915,12 +5187,17 @@
 
         async function exportBookmarks() {
             try {
+                const headers = {
+                    'Authorization': `Bearer ${authToken}`
+                };
+                if (BASE_URL.includes('ngrok')) {
+                    headers['ngrok-skip-browser-warning'] = 'true';
+                }
+
                 const response = await fetch(`${API_BASE}/export_bookmarks`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    }
+                    headers: Object.assign(headers, { 'Content-Type': 'application/json' }),
+                    body: JSON.stringify({})
                 });
 
                 if (response.ok) {
@@ -4948,22 +5225,35 @@
             document.getElementById('bookmarksListModal').classList.remove('show');
         }
 
-        async function loadBookmarksList() {
-            const container = document.getElementById('bookmarksContainer');
-            const loader = document.getElementById('bookmarksListLoader');
+
+
+    async function loadBookmarksList() {
+        const container = document.getElementById('bookmarksContainer');
+        const loader = document.getElementById('bookmarksListLoader');
+        
+        container.innerHTML = '';
+        loader.style.display = 'block';
+        
+        try {
+            const headers = {
+                'Authorization': `Bearer ${authToken}`
+            };
+            if (BASE_URL.includes('ngrok')) {
+                headers['ngrok-skip-browser-warning'] = 'true';
+            }
+
+            const response = await fetch(`${BASE_URL}/bookmarks?limit=50`, {
+                headers: headers
+            });
             
-            container.innerHTML = '';
-            loader.style.display = 'block';
-            
-            try {
-                const response = await fetch(`${API_BASE}/bookmarks?limit=50`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                loader.style.display = 'none';
+            if (!response.ok) {
+                const txt = await response.text();
+                console.error("Bookmarks load failed:", txt);
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            loader.style.display = 'none';
                 
                 if (data.bookmarks.length === 0) {
                     container.innerHTML = '<div style="text-align:center; padding:20px;">No bookmarks found.</div>';
@@ -5127,7 +5417,7 @@
         function addBookmarkButton(messageElement, messageId) {
             const btn = document.createElement('button');
             btn.className = 'bookmark-btn';
-            btn.innerHTML = '⭐ Bookmark';
+            btn.innerHTML = '⭐';
             btn.onclick = () => showBookmarkModal(messageId);
             messageElement.appendChild(btn);
         }

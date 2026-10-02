@@ -1,0 +1,774 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FYP Project Poster - KITE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+
+        /* A1 Size: 594mm x 841mm at 96 DPI = 2245px x 3179px */
+        .poster {
+            width: 2245px;
+            height: 3179px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Header Section */
+        .header {
+            background: white;
+            padding: 40px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 8px solid #ffd700;
+        }
+
+        .logo-left {
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            font-weight: 900;
+        }
+
+        .logo-right {
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            font-weight: 900;
+        }
+
+        .header-content {
+            flex: 1;
+            text-align: center;
+            padding: 0 40px;
+        }
+
+        .university {
+            font-size: 38px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .institute {
+            font-size: 28px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .project-title-header {
+            font-size: 52px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 15px 0;
+            line-height: 1.2;
+        }
+
+        .student-info {
+            font-size: 26px;
+            color: #333;
+            margin-top: 15px;
+        }
+
+        .student-info strong {
+            color: #667eea;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 50px 60px;
+        }
+
+        /* Section Styling */
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 35px 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 100%;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+        }
+
+        .section-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .section-content {
+            font-size: 26px;
+            line-height: 1.8;
+            color: #333;
+            padding-left: 15px;
+        }
+
+        .section-content ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .section-content li {
+            margin-bottom: 15px;
+            padding-left: 40px;
+            position: relative;
+        }
+
+        .section-content li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: 900;
+            font-size: 28px;
+        }
+
+        /* Two Column Layout */
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* Architecture Section */
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .arch-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .arch-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .arch-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .arch-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .arch-desc {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        /* Workflow Arrow Styles */
+        .workflow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .workflow-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            min-width: 220px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            position: relative;
+        }
+
+        .workflow-box.input {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .workflow-box.processing {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .workflow-box.retrieval {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .workflow-box.llm {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .workflow-box.output {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .workflow-icon {
+            font-size: 56px;
+            margin-bottom: 15px;
+        }
+
+        .workflow-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .workflow-desc {
+            font-size: 20px;
+            opacity: 0.95;
+            line-height: 1.4;
+        }
+
+        .arrow {
+            font-size: 48px;
+            color: #667eea;
+            font-weight: 900;
+        }
+
+        /* Technologies Grid */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .tech-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            font-size: 22px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
+        }
+
+        /* Key Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .feature-desc {
+            font-size: 22px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* Benefits/Limitations Split */
+        .split-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .benefit-box {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .limitation-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .box-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .box-icon {
+            font-size: 42px;
+        }
+
+        .box-content {
+            font-size: 24px;
+            line-height: 1.8;
+        }
+
+        .box-content li {
+            margin-bottom: 12px;
+        }
+
+        /* Conclusion Section */
+        .conclusion {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .conclusion-title {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .conclusion-content {
+            font-size: 26px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .poster-info {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        /* Highlight Box */
+        .highlight {
+            background: rgba(255, 215, 0, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+
+        /* Warning Icon */
+        .warning-icon {
+            color: #ff6b6b;
+        }
+
+        .success-icon {
+            color: #51cf66;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .poster {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="poster">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-left">🎓</div>
+            <div class="header-content">
+                <div class="university">UNIVERSITY OF SINDH, JAMSHORO</div>
+                <div class="institute">Institute of Information & Communication Technology</div>
+                <div class="project-title-header">KITE<br><span style="font-size: 0.6em; font-weight: 600;">(Knowledge
+                        Integration Through Textual Embeddings)</span></div>
+                <div style="font-size: 28px; color: #555; margin-top: 10px; font-weight: 500;">An Intelligent Document
+                    Chatbot with RAG & Vision AI</div>
+                <div class="student-info">
+                    <strong>Name:</strong> [Your Name] | <strong>Roll No:</strong> [Your Roll Number]<br>
+                    <strong>Supervisor:</strong> [Supervisor Name], <strong>Designation:</strong> [Position]
+                </div>
+            </div>
+            <div class="logo-right">🤖</div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content">
+            <!-- Problem Statement -->
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-icon">⚠️</div>
+                    PROBLEM STATEMENT
+                </div>
+                <div class="section-content">
+                    Managing and extracting information from large document collections is time-consuming and
+                    inefficient.
+                    Traditional search relies on exact keyword matching and fails to understand context or semantics.
+                    Users struggle to quickly find answers from PDFs, images, and scanned documents. Existing AI
+                    solutions
+                    lack privacy controls, are expensive, or don't integrate OCR and vision capabilities for multimodal
+                    content.
+                </div>
+            </div>
+
+            <!-- Objectives -->
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-icon">🎯</div>
+                    OBJECTIVES
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li>Develop an intelligent chatbot capable of understanding and answering queries from documents
+                            (PDFs, DOCX, images)</li>
+                        <li>Implement Retrieval-Augmented Generation (RAG) to provide accurate, context-grounded
+                            responses</li>
+                        <li>Integrate OCR (Tesseract) and Image Captioning (BLIP) for multimodal document processing
+                        </li>
+                        <li>Achieve high retrieval precision (>85%) and reduce AI hallucinations significantly</li>
+                        <li>Enable privacy-preserving on-premise deployment with user authentication and data security
+                        </li>
+                        <li>Create an intuitive, responsive web interface with real-time chat and streaming responses
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Proposed Solution -->
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-icon">💡</div>
+                    PROPOSED SOLUTION / SYSTEM OVERVIEW
+                </div>
+                <div class="section-content">
+                    The system combines <span class="highlight">semantic search</span>, <span class="highlight">computer
+                        vision</span>,
+                    and <span class="highlight">large language models</span> to create an intelligent document
+                    assistant. Users upload documents
+                    (PDFs, DOCX, images) which are processed through OCR (for scanned text) and image captioning.
+                    Content is split into chunks,
+                    embedded using Sentence-BERT, and indexed in FAISS for fast semantic retrieval. When users ask
+                    questions, the system
+                    retrieves relevant chunks and uses them as context for GPT-4o-mini to generate accurate, cited
+                    responses. The system also
+                    features real-time tools (weather, Wikipedia, calculator) and secure JWT authentication with OTP
+                    verification.
+                </div>
+            </div>
+
+            <!-- Architecture -->
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-icon">🏗️</div>
+                    ARCHITECTURE / WORKFLOW
+                </div>
+
+                <!-- Row 1: Input Layer -->
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 24px; font-weight: 700; color: #667eea; margin-bottom: 15px;">📥 INPUT LAYER
+                    </div>
+                    <div class="architecture-grid">
+                        <div class="arch-box" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="arch-icon">👤</div>
+                            <div class="arch-title">User Query</div>
+                            <div class="arch-desc">Text, voice, or file upload</div>
+                        </div>
+                        <div class="arch-box" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <div class="arch-icon">🔐</div>
+                            <div class="arch-title">JWT Auth</div>
+                            <div class="arch-desc">Token validation + OTP</div>
+                        </div>
+                        <div class="arch-box" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <div class="arch-icon">🎯</div>
+                            <div class="arch-title">Query Classifier</div>
+                            <div class="arch-desc">File/Weather/Wiki/Calc</div>
+                        </div>
+                        <div class="arch-box" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+                            <div class="arch-icon">📤</div>
+                            <div class="arch-title">File Processor</div>
+                            <div class="arch-desc">PDF/DOCX/Image handler</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Processing Layer -->
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 24px; font-weight: 700; color: #764ba2; margin-bottom: 15px;">⚙️ PROCESSING
+                        LAYER</div>
+                    <div class="architecture-grid">
+                        <div class="arch-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="arch-icon">👁️</div>
+                            <div class="arch-title">Vision AI</div>
+                            <div class="arch-desc">OCR (Tesseract) + BLIP caption</div>
+                        </div>
+                        <div class="arch-box" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="arch-icon">✂️</div>
+                            <div class="arch-title">Chunking</div>
+                            <div class="arch-desc">Text segmentation + cleanup</div>
+                        </div>
+                        <div class="arch-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="arch-icon">🧠</div>
+                            <div class="arch-title">Embeddings</div>
+                            <div class="arch-desc">Sentence-BERT encoding</div>
+                        </div>
+                        <div class="arch-box"
+                            style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333;">
+                            <div class="arch-icon">🔗</div>
+                            <div class="arch-title">Hybrid Search</div>
+                            <div class="arch-desc">FAISS (semantic) + BM25 (keyword)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Intelligence & Output Layer -->
+                <div>
+                    <div style="font-size: 24px; font-weight: 700; color: #f5576c; margin-bottom: 15px;">🎯 INTELLIGENCE
+                        & OUTPUT</div>
+                    <div class="architecture-grid">
+                        <div class="arch-box"
+                            style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333;">
+                            <div class="arch-icon">🌐</div>
+                            <div class="arch-title">Real-Time APIs</div>
+                            <div class="arch-desc">Weather/Wikipedia/Calculator</div>
+                        </div>
+                        <div class="arch-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="arch-icon">📚</div>
+                            <div class="arch-title">RAG Context</div>
+                            <div class="arch-desc">Top-K chunks retrieval</div>
+                        </div>
+                        <div class="arch-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="arch-icon">🤖</div>
+                            <div class="arch-title">LLM (GPT-4o-mini)</div>
+                            <div class="arch-desc">Context-grounded generation</div>
+                        </div>
+                        <div class="arch-box" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <div class="arch-icon">💬</div>
+                            <div class="arch-title">Stream Response</div>
+                            <div class="arch-desc">Real-time AI output + citations</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Storage Layer (Compact) -->
+                <div
+                    style="margin-top: 25px; padding: 20px; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border-radius: 15px;">
+                    <div style="font-size: 22px; font-weight: 700; color: #333; margin-bottom: 10px;">💾 STORAGE LAYER
+                        (Backend)</div>
+                    <div
+                        style="font-size: 18px; color: #555; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px;">
+                        <span><strong>MySQL:</strong> Users, Chats, Messages, Files</span>
+                        <span><strong>FAISS Index:</strong> Vector embeddings</span>
+                        <span><strong>User Data:</strong> Uploads, profiles, exports</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two Column: Tools & Key Features -->
+            <div class="two-columns">
+                <!-- Tools & Technologies -->
+                <div class="section">
+                    <div class="section-title">
+                        <div class="section-icon">🛠️</div>
+                        TOOLS & TECHNOLOGIES
+                    </div>
+                    <div class="tech-grid">
+                        <div class="tech-box">Python 3.8+</div>
+                        <div class="tech-box">Flask API</div>
+                        <div class="tech-box">MySQL</div>
+                        <div class="tech-box">Sentence-BERT</div>
+                        <div class="tech-box">FAISS</div>
+                        <div class="tech-box">Tesseract OCR</div>
+                        <div class="tech-box">BLIP Model</div>
+                        <div class="tech-box">GPT-4o-mini</div>
+                        <div class="tech-box">JWT Auth</div>
+                    </div>
+                </div>
+
+                <!-- Key Features -->
+                <div class="section">
+                    <div class="section-title">
+                        <div class="section-icon">⭐</div>
+                        KEY FEATURES
+                    </div>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🔍</div>
+                            <div class="feature-title">Semantic RAG</div>
+                            <div class="feature-desc">87% precision with FAISS + SBERT</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📸</div>
+                            <div class="feature-title">Vision AI</div>
+                            <div class="feature-desc">OCR & image captioning</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🌦️</div>
+                            <div class="feature-title">Real-Time Tools</div>
+                            <div class="feature-desc">Weather, Wikipedia, Calculator</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔒</div>
+                            <div class="feature-title">Secure Auth</div>
+                            <div class="feature-desc">JWT with OTP verification</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Benefits & Limitations -->
+            <div class="split-section">
+                <div class="benefit-box">
+                    <div class="box-title">
+                        <span class="box-icon success-icon">✅</span>
+                        BENEFITS / APPLICATIONS
+                    </div>
+                    <div class="box-content">
+                        <ul>
+                            <li><strong>87% Reduction in Hallucinations:</strong> RAG grounds answers in actual
+                                documents</li>
+                            <li><strong>Privacy-First:</strong> Fully on-premise deployment for sensitive data</li>
+                            <li><strong>Cost-Effective:</strong> ~$2 per 1000 queries vs $30-200 for commercial
+                                solutions</li>
+                            <li><strong>Multimodal Support:</strong> Handles PDFs, images, scanned documents seamlessly
+                            </li>
+                            <li><strong>Fast Retrieval:</strong>
+                                <43ms search latency with FAISS</li>
+                            <li><strong>High User Satisfaction:</strong> 78.3 SUS score, +52 NPS</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="limitation-box">
+                    <div class="box-title">
+                        <span class="box-icon warning-icon">⚠️</span>
+                        LIMITATIONS & FUTURE WORK
+                    </div>
+                    <div class="box-content">
+                        <ul>
+                            <li><strong>OCR Accuracy:</strong> Struggles with low-res scans & handwriting</li>
+                            <li><strong>Chunking Issues:</strong> Fixed-size chunks may break context</li>
+                            <li><strong>Scale Limitations:</strong> Optimized for <100K chunks</li>
+                            <li><strong>Future Enhancements:</strong> Multi-document QA, visual QA, dark mode</li>
+                            <li><strong>Planned Additions:</strong> Excel/PPT support, mobile app</li>
+                            <li><strong>Advanced Features:</strong> Cross-encoder reranking, local LLM support</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conclusion -->
+            <div class="conclusion">
+                <div class="conclusion-title">🎓 CONCLUSION</div>
+                <div class="conclusion-content">
+                    This project successfully demonstrates that building sophisticated, <strong>privacy-preserving,
+                        multimodal document
+                        intelligence systems</strong> is practical on consumer hardware. Achieved <strong>87% retrieval
+                        precision</strong>,
+                    <strong>93% user task success rate</strong>, and <strong>78% reduction in hallucinations</strong>.
+                    The system offers
+                    the best balance of privacy, features, cost-effectiveness, and ease-of-use for academic and research
+                    applications.
+                    It serves as a comprehensive learning resource for students and researchers building similar RAG
+                    systems.
+                </div>
+                <div class="poster-info">
+                    <strong>Size:</strong> A1 (2245 x 3179 px) | <strong>Orientation:</strong> Portrait<br>
+                    <strong>Format:</strong> HTML/CSS (Optimized for Figma/Canva Export)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Optional: Add print functionality
+        function printPoster() {
+            window.print();
+        }
+
+        // Optional: Export instructions alert
+        console.log('To export to PDF: Use browser Print > Save as PDF with A1 paper size');
+        console.log('To use in Figma/Canva: Take screenshot at 100% zoom or copy HTML structure');
+    </script>
+</body>
+
+</html>

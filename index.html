@@ -1,11 +1,13 @@
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI ChatBot | Final Year Project</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -15,15 +17,15 @@
         }
 
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #8b5cf6;
-            --accent: #ec4899;
+            --primary: #1e3a8a;
+            --primary-dark: #1e40af;
+            --secondary: #3b82f6;
+            --accent: #d97706;
             --light: #f8fafc;
             --dark: #1e293b;
             --gray: #64748b;
             --success: #10b981;
-            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+            --gradient: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
             --transition: all 0.3s ease;
         }
 
@@ -55,27 +57,36 @@
             right: 20px;
             width: 60px;
             height: 60px;
-            background-image: linear-gradient(135deg, 
-             rgb(99, 102, 241) 0%,
-             rgb(139, 92, 246) 50%, 
-             rgb(236, 72, 153) 100%); /* Blue background */
-            border-radius: 50%; /* Circular shape */
+            background-image: linear-gradient(135deg,
+                    rgb(30, 58, 138) 0%,
+                    rgb(59, 130, 246) 100%);
+            /* Professional navy blue */
+            border-radius: 50%;
+            /* Circular shape */
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
-            transition: transform 0.3s ease; /* Smooth hover effect */
-            z-index: 1000; /* Ensure it's on top, floating above content */
-            border: none; /* Remove button border */
-            padding: 0; /* Remove padding */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            /* Shadow for depth */
+            transition: transform 0.3s ease;
+            /* Smooth hover effect */
+            z-index: 1000;
+            /* Ensure it's on top, floating above content */
+            border: none;
+            /* Remove button border */
+            padding: 0;
+            /* Remove padding */
         }
+
         #ai-chat-icon:hover {
-            transform: scale(1.1); /* Slight enlarge on hover */
+            transform: scale(1.1);
+            /* Slight enlarge on hover */
         }
 
         #ai-chat-icon::before {
-            content: "💬"; /* Chat bubble emoji as icon */
+            content: "💬";
+            /* Chat bubble emoji as icon */
             font-size: 30px;
         }
 
@@ -177,6 +188,32 @@
             gap: 15px;
         }
 
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--light);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .light-mode .theme-toggle-btn {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: var(--dark);
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
         .btn {
             display: inline-block;
             padding: 10px 20px;
@@ -231,7 +268,7 @@
         }
 
         /* Splash Screen */
-       .splash-screen {
+        .splash-screen {
             position: fixed;
             top: 0;
             left: 0;
@@ -248,7 +285,8 @@
 
         .splash-screen.hidden {
             opacity: 0;
-            pointer-events: none; /* Prevent interaction during fade */
+            pointer-events: none;
+            /* Prevent interaction during fade */
         }
 
         .splash-logo {
@@ -521,6 +559,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -675,38 +714,45 @@
         }
 
         /* About Sections */
-        .about-content, .creator-content {
+        .about-content,
+        .creator-content {
             display: flex;
             align-items: center;
             gap: 40px;
         }
 
-        .about-text, .creator-text {
+        .about-text,
+        .creator-text {
             flex: 1;
         }
 
-        .about-text h2, .creator-text h2 {
+        .about-text h2,
+        .creator-text h2 {
             font-size: 2.5rem;
             margin-bottom: 20px;
             font-weight: 800;
         }
 
-        .about-text p, .creator-text p {
+        .about-text p,
+        .creator-text p {
             font-size: 1.1rem;
             margin-bottom: 20px;
             color: #cbd5e1;
         }
 
-        .light-mode .about-text p, .light-mode .creator-text p {
+        .light-mode .about-text p,
+        .light-mode .creator-text p {
             color: var(--gray);
         }
 
-        .about-image, .creator-image {
+        .about-image,
+        .creator-image {
             flex: 1;
             text-align: center;
         }
 
-        .about-image img, .creator-image img {
+        .about-image img,
+        .creator-image img {
             max-width: 100%;
             border-radius: 20px;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
@@ -883,20 +929,23 @@
 
         /* Responsive Design */
         @media (max-width: 992px) {
-            .home-content, .about-content, .creator-content {
+
+            .home-content,
+            .about-content,
+            .creator-content {
                 flex-direction: column;
                 text-align: center;
             }
-            
+
             .home-buttons {
                 justify-content: center;
             }
-            
+
             .chat-container {
                 flex-direction: column;
                 height: auto;
             }
-            
+
             .sidebar {
                 width: 100%;
                 margin-bottom: 20px;
@@ -907,21 +956,22 @@
             .nav-links {
                 display: none;
             }
-            
+
             .hamburger {
                 display: flex;
             }
-            
+
             .home-text h1 {
                 font-size: 2.5rem;
             }
-            
+
             .section {
                 padding: 60px 0;
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Splash Screen -->
     <div class="splash-screen" id="splashScreen">
@@ -934,20 +984,22 @@
     <header class="glass-effect">
         <div class="container header-container">
             <a href="#" class="logo">AI<span>ChatBot</span></a>
-            
+
             <div class="nav-links">
                 <a href="#home">Home</a>
-                <a href="login_regis.html" target="_blank" id="newChatBtn">Chat</a>
+                <a href="chatscreenui.html" target="_blank" id="newChatBtn">Chat</a>
                 <a href="#services">Services</a>
                 <a href="#about">About Project</a>
                 <a href="#creator">About Creator</a>
                 <a href="#contact">Contact</a>
             </div>
-            
+
             <div class="nav-actions">
-                <button class="btn-outline" id="themeToggle">
-                    <i class="fas fa-moon"></i>
+                <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle theme" style="margin-right: 10px;">
+                    <i class="fas fa-sun"></i>
                 </button>
+                <a href="login_regis.html" class="btn-outline">Login</a>
+                <button class="btn" onclick="window.location.href='login_regis.html'">Get Started</button>
                 <div class="hamburger" id="hamburger">
                     <span></span>
                     <span></span>
@@ -962,16 +1014,18 @@
         <div class="container home-content">
             <div class="home-text">
                 <h1>Experience the Power of <span>AI Chat</span></h1>
-                <p>Our advanced chatbot utilizes cutting-edge artificial intelligence to provide intelligent responses, answer queries, and assist with various tasks. Experience the future of conversation today.</p>
+                <p>Our advanced chatbot utilizes cutting-edge artificial intelligence to provide intelligent responses,
+                    answer queries, and assist with various tasks. Experience the future of conversation today.</p>
                 <div class="home-buttons">
-                    <button class="btn">Start Chatting</button>
+                   <a href="chatscreenui.html"> <button class="btn" >Start Chatting</button></a>
                     <button class="btn btn-outline">
                         <i class="fas fa-play-circle"></i> Watch Demo
                     </button>
                 </div>
             </div>
             <div class="home-image">
-                <img src="https://cdn.prod.website-files.com/634054c00f602044abb3060d/6493311b4fb3f00cc62310f1_Best%20AI%20Chatbots.webp" alt="AI Chat Visualization">
+                <img src="https://cdn.prod.website-files.com/634054c00f602044abb3060d/6493311b4fb3f00cc62310f1_Best%20AI%20Chatbots.webp"
+                    alt="AI Chat Visualization">
             </div>
         </div>
     </section>
@@ -980,22 +1034,22 @@
     <section class="section" id="chat">
         <div class="container">
             <h2 class="text-3xl font-bold text-center mb-10">Chat Interface</h2>
-            
+
             <div class="chat-container">
                 <div class="sidebar">
                     <div class="sidebar-header">
                         <h3>Conversations</h3>
                     </div>
-                    
+
                     <button class="btn new-chat-btn">
                         <i class="fas fa-plus"></i> New Chat
                     </button>
-                    
+
                     <div class="search-chats">
                         <i class="fas fa-search"></i>
                         <input type="text" placeholder="Search chats...">
                     </div>
-                    
+
                     <div class="saved-chats">
                         <div class="chat-item">
                             <div>Project Discussion</div>
@@ -1010,7 +1064,7 @@
                             <small>Last week</small>
                         </div>
                     </div>
-                    
+
                     <div class="sidebar-actions">
                         <div class="sidebar-action">
                             <i class="fas fa-save"></i>
@@ -1026,7 +1080,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="chat-main">
                     <div class="chat-header">
                         <h3>AI Assistant</h3>
@@ -1035,7 +1089,7 @@
                             Online
                         </div>
                     </div>
-                    
+
                     <div class="chat-messages">
                         <div class="message ai">
                             Hello! I'm your AI assistant. How can I help you today?
@@ -1044,10 +1098,11 @@
                             I'd like to learn more about your capabilities.
                         </div>
                         <div class="message ai">
-                            I can answer questions, provide information, analyze documents, and much more. What would you like to know?
+                            I can answer questions, provide information, analyze documents, and much more. What would
+                            you like to know?
                         </div>
                     </div>
-                    
+
                     <div class="chat-input">
                         <input type="text" placeholder="Type your message...">
                         <div class="chat-actions">
@@ -1071,7 +1126,7 @@
     <section class="section" id="services">
         <div class="container">
             <h2 class="text-3xl font-bold text-center mb-10">Our Services</h2>
-            
+
             <div class="services-grid">
                 <div class="service-card">
                     <div class="service-icon">
@@ -1080,7 +1135,7 @@
                     <h3>Intelligent Conversations</h3>
                     <p>Engage in natural, human-like conversations with our advanced AI chatbot.</p>
                 </div>
-                
+
                 <div class="service-card">
                     <div class="service-icon">
                         <i class="fas fa-file-alt"></i>
@@ -1088,7 +1143,7 @@
                     <h3>Document Analysis</h3>
                     <p>Upload documents and get summaries, insights, and answers from your content.</p>
                 </div>
-                
+
                 <div class="service-card">
                     <div class="service-icon">
                         <i class="fas fa-search"></i>
@@ -1096,7 +1151,7 @@
                     <h3>Smart Search</h3>
                     <p>Find information quickly with our AI-powered search capabilities.</p>
                 </div>
-                
+
                 <div class="service-card">
                     <div class="service-icon">
                         <i class="fas fa-language"></i>
@@ -1104,7 +1159,7 @@
                     <h3>Multilingual Support</h3>
                     <p>Communicate in multiple languages with accurate translation.</p>
                 </div>
-                
+
                 <div class="service-card">
                     <div class="service-icon">
                         <i class="fas fa-robot"></i>
@@ -1112,7 +1167,7 @@
                     <h3>Task Automation</h3>
                     <p>Automate repetitive tasks and increase your productivity.</p>
                 </div>
-                
+
                 <div class="service-card">
                     <div class="service-icon">
                         <i class="fas fa-chart-line"></i>
@@ -1129,13 +1184,17 @@
         <div class="container about-content">
             <div class="about-text">
                 <h2>About The Project</h2>
-                <p>This AI chatbot is a Final Year Project developed to demonstrate the capabilities of modern artificial intelligence in natural language processing and conversation.</p>
-                <p>The system is designed to understand context, provide relevant responses, and learn from interactions to improve over time.</p>
-                <p>Our goal is to create an AI assistant that can be integrated into various platforms to enhance user experience and provide valuable assistance.</p>
+                <p>This AI chatbot is a Final Year Project developed to demonstrate the capabilities of modern
+                    artificial intelligence in natural language processing and conversation.</p>
+                <p>The system is designed to understand context, provide relevant responses, and learn from interactions
+                    to improve over time.</p>
+                <p>Our goal is to create an AI assistant that can be integrated into various platforms to enhance user
+                    experience and provide valuable assistance.</p>
                 <button class="btn">Learn More</button>
             </div>
             <div class="about-image">
-                <img src="https://messengerbot.app/wp-content/uploads/2025/05/chatbot-voice-assistant-1280x731.png" alt="About Project">
+                <img src="https://messengerbot.app/wp-content/uploads/2025/05/chatbot-voice-assistant-1280x731.png"
+                    alt="About Project">
             </div>
         </div>
     </section>
@@ -1148,9 +1207,12 @@
             </div>
             <div class="creator-text">
                 <h2>About The Creator</h2>
-                <p>This project was developed by University o Sindh team, a final year Computer Science students at University of Sindh.</p>
-                <p>With a passion for artificial intelligence and web development, they have combined these interests to create this advanced chatbot system.</p>
-                <p>this team has expertise in machine learning, natural language processing, and full-stack web development.</p>
+                <p>This project was developed by University o Sindh team, a final year Computer Science students at
+                    University of Sindh.</p>
+                <p>With a passion for artificial intelligence and web development, they have combined these interests to
+                    create this advanced chatbot system.</p>
+                <p>this team has expertise in machine learning, natural language processing, and full-stack web
+                    development.</p>
                 <div class="social-links">
                     <a href="#"><i class="fab fa-github"></i></a>
                     <a href="#"><i class="fab fa-linkedin"></i></a>
@@ -1165,12 +1227,12 @@
     <section class="section" id="contact">
         <div class="container">
             <h2 class="text-3xl font-bold text-center mb-10">Get In Touch</h2>
-            
+
             <div class="contact-container">
                 <div class="contact-info">
                     <h3>Let's Talk About Your Project</h3>
                     <p>Feel free to reach out if you want to collaborate with us, or simply have a question.</p>
-                    
+
                     <div class="contact-details">
                         <div class="contact-item">
                             <div class="contact-icon">
@@ -1178,20 +1240,22 @@
                             </div>
                             <div>
                                 <h4>Location</h4>
-                                <p><a href="https://www.bing.com/maps/directions?ty=18&vdpid=7409559364731666433&v=2&sV=1&FORM=MIRE&secq=25.407309%2C68.338774&srs=mp" target="_blank">Qasimabad, Hyderabad, Sindh, Pakistan</a></p>
+                                <p><a href="https://www.bing.com/maps/directions?ty=18&vdpid=7409559364731666433&v=2&sV=1&FORM=MIRE&secq=25.407309%2C68.338774&srs=mp"
+                                        target="_blank">Qasimabad, Hyderabad, Sindh, Pakistan</a></p>
                             </div>
                         </div>
-                        
+
                         <div class="contact-item">
                             <div class="contact-icon">
                                 <i class="fas fa-envelope"></i>
                             </div>
                             <div>
                                 <h4>Email</h4>
-                                <p><a href="https://mail.google.com/mail/?view=cm&fs=1&tf=1&to=afzalkhanrind92@gmail.com" target="_blank">afzalkhanrind92@gmail.com</a></p>
+                                <p><a href="https://mail.google.com/mail/?view=cm&fs=1&tf=1&to=afzalkhanrind92@gmail.com"
+                                        target="_blank">afzalkhanrind92@gmail.com</a></p>
                             </div>
                         </div>
-                        
+
                         <div class="contact-item">
                             <div class="contact-icon">
                                 <i class="fas fa-phone"></i>
@@ -1203,21 +1267,21 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="contact-form">
                     <form>
                         <div class="form-group">
                             <input type="text" class="form-control" placeholder="Your Name" required>
                         </div>
-                        
+
                         <div class="form-group">
                             <input type="email" class="form-control" placeholder="Your Email" required>
                         </div>
-                        
+
                         <div class="form-group">
                             <textarea class="form-control" placeholder="Your Message" required></textarea>
                         </div>
-                        
+
                         <button type="submit" class="btn">Send Message</button>
                     </form>
                 </div>
@@ -1234,7 +1298,7 @@
                     <h3>AI ChatBot</h3>
                     <p>An intelligent chatbot solution powered by artificial intelligence for modern applications.</p>
                 </div>
-                
+
                 <div class="footer-column">
                     <h3>Quick Links</h3>
                     <ul class="footer-links">
@@ -1244,7 +1308,7 @@
                         <li><a href="#about">About</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-column">
                     <h3>Resources</h3>
                     <ul class="footer-links">
@@ -1254,7 +1318,7 @@
                         <li><a href="#">Blog</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-column">
                     <h3>Connect With Us</h3>
                     <div class="social-links">
@@ -1265,7 +1329,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="copyright">
                 <p>&copy; 2023 AI ChatBot. All Rights Reserved. | Final Year Project</p>
             </div>
@@ -1273,12 +1337,12 @@
     </footer>
 
     <script>
-        
 
-      document.getElementById('ai-chat-icon').addEventListener('click', function() {
-    localStorage.setItem('startNewChat', 'true'); // Set flag
-    window.open('login_regis.html', '_blank');   // Open chat screen
-});
+
+        document.getElementById('ai-chat-icon').addEventListener('click', function () {
+            localStorage.setItem('startNewChat', 'true'); // Set flag
+            window.open('login_regis.html', '_blank');   // Open chat screen
+        });
 
         // DOM Elements
         const splashScreen = document.getElementById('splashScreen');
@@ -1287,7 +1351,7 @@
         const body = document.body;
 
         // Hide splash screen and show main content
-       window.addEventListener('load', () => {
+        window.addEventListener('load', () => {
             const splashScreen = document.getElementById('splashScreen');
             setTimeout(() => {
                 splashScreen.classList.add('hidden'); // Start fade-out
@@ -1299,15 +1363,31 @@
             }, 2000); // 2-second delay before fade starts
         });
         // Theme toggle functionality
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('light-mode');
-            
-            if (body.classList.contains('light-mode')) {
-                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const isLight = !body.classList.contains('light-mode');
+                setTheme(isLight);
+            });
+        }
+
+        function setTheme(isLight) {
+            const icon = themeToggle.querySelector('i');
+            if (isLight) {
+                body.classList.add('light-mode');
+                if (icon) icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
             } else {
-                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                body.classList.remove('light-mode');
+                if (icon) icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
             }
-        });
+        }
+
+        // Initialize Theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            setTheme(true);
+        }
 
         // Chat functionality
         const messageInput = document.querySelector('.chat-input input');
@@ -1325,7 +1405,7 @@
 
         function generateAIResponse(message) {
             const lowerMessage = message.toLowerCase();
-            
+
             if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
                 return "Hello there! How can I assist you today?";
             } else if (lowerMessage.includes('how are you')) {
@@ -1351,10 +1431,10 @@
         function sendMessage() {
             const message = messageInput.value.trim();
             if (message === '') return;
-            
+
             addMessage(message, true);
             messageInput.value = '';
-            
+
             // Simulate AI response after a short delay
             setTimeout(() => {
                 addMessage(generateAIResponse(message), false);
@@ -1372,10 +1452,10 @@
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                
+
                 const targetId = this.getAttribute('href');
                 if (targetId === '#') return;
-                
+
                 const targetElement = document.querySelector(targetId);
                 if (targetElement) {
                     targetElement.scrollIntoView({
@@ -1391,4 +1471,5 @@
         }, 2000);
     </script>
 </body>
+
 </html>

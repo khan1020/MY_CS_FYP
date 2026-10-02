@@ -55,6 +55,13 @@ class QueryClassifier:
         r'(?:what|check|tell|show).*(?:weath|temp|climat)',
         r'who\s+is\s+(\w+)',  # Wikipedia queries
         r'what\s+is\s+(?:the\s+)?definition\s+of',
+        r'when\s+is\s+',   # Date queries
+        r'what\s+date\s+is',
+        r'islamic',        # Broad match for islamic dates/events
+        r'hijri',          # Broad match for hijri dates
+        r'search\s+for',   # Explicit search intent
+        r'find\s+info\s+about',
+        r'latest\s+news',
     ]
     
     @classmethod

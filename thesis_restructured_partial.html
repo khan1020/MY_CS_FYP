@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Document Chatbot with RAG Capabilities - FYP Thesis</title>
+    <link rel="stylesheet" href="thesis_styles.css">
+    <!-- Prism.js for Code Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+</head>
+
+<body>
+
+
+    <!-- ============================================
+     COVER PAGE
+     ============================================ -->
+    <div class="cover-page">
+        <p style="text-align: center; margin-bottom: 2rem;"><strong>INSTITUTE OF MATHEMATICS AND COMPUTER SCIENCE</strong></p>
+        <p style="text-align: center;"><strong>BS(CS) Thesis</strong></p>
+        
+        <h1 style="text-align: center; margin: 3rem 0;">AI-POWERED DOCUMENT CHATBOT<br>WITH RAG CAPABILITIES</h1>
+        
+        <p style="text-align: center; margin: 2rem 0;"><strong>THESIS SUBMITTED TOWARDS THE PARTIAL FULFILMENT OF THE REQUIREMENT OF THE<br>
+        UNIVERSITY OF SINDH, FOR THE AWARD OF BACHELOR OF SCIENCE IN<br>
+        COMPUTER SCIENCE DEGREE.</strong></p>
+        
+        <div style="margin: 3rem 0; text-align: center;">
+            <p><strong>By</strong></p>
+            <p>1. Student Name1 (Group Leader) 2K22/CS/XXX</p>
+            <p>2. Student Name2 2K22/CS/XXX</p>
+            <p>3. Student Name3 2K22/CS/XXX</p>
+        </div>
+        
+        <p style="text-align: center; margin-top: 4rem;"><strong>February 2026</strong></p>
+        <p style="text-align: center;"><strong>University of Sindh, Jamshoro</strong></p>
+    </div>
+
+    <!-- ============================================
+     CERTIFICATE
+     ============================================ -->
+    <div class="page-break-before">
+        <h2 style="text-align: center;">CERTIFICATE</h2>
+        <p>This is to certify that the project entitled "AI-Powered Document Chatbot with RAG Capabilities" has been carried out by the students, and Student Name3, during the academic year 2024-2026 as a partial requirement for the degree of Bachelor of Science in Computer Science (BSCS).</p>
+        
+        <div style="margin-top: 4rem;">
+            <p>_______________________</p>
+            <p>Supervisor Name</p>
+            <p>Department of Computer Science</p>
+        </div>
+    </div>
+
+    <!-- ============================================
+     DECLARATION
+     ============================================ -->
+    <div class="page-break-before">
+        <h2 style="text-align: center;">DECLARATION</h2>
+        <p>This thesis is our original work and has not been ever submitted, in whole or in part for a degree at this or any other university. Nor it contain, to the best of our knowledge and belief any material published or written by any other person, except as acknowledged in the text.</p>
+        
+        <div style="margin-top: 3rem;">
+            <p>_______________________</p>
+            <p>STUDENT NAME1</p>
+            <br>
+            <p>_______________________</p>
+            <p>STUDENT NAME2</p>
+            <br>
+            <p>_______________________</p>
+            <p>STUDENT NAME3</p>
+        </div>
+    </div>
+
+    <!-- ============================================
+     COPY RIGHTS
+     ============================================ -->
+    <div class="page-break-before">
+        <h2 style="text-align: center;">COPY RIGHTS</h2>
+        <p>We hereby authorize University of Sindh, Jamshoro to supply copies of our thesis to individuals or libraries for study purposes only. However, no any part of this thesis or the information contained therein may be included in a publication or referred in any publication without prior written permission of the authors. Any reference must be fully acknowledged.</p>
+        
+        <div style="margin-top: 3rem;">
+            <p>_______________________</p>
+            <p>STUDENT NAME1</p>
+            <br>
+            <p>_______________________</p>
+            <p>STUDENT NAME2</p>
+            <br>
+            <p>_______________________</p>
+            <p>STUDENT NAME3</p>
+        </div>
+    </div>
+
+    <!-- ============================================
+     DEDICATION
+     ============================================ -->
+    <div class="page-break-before">
+        <h2 style="text-align: center;">DEDICATION</h2>
+        <p style="font-style: italic; text-align: center; margin-top: 3rem;">
+        [To be filled by students]
+        </p>
+    </div>
+
+    <!-- ============================================
+     ACKNOWLEDGEMENTS
+     ============================================ -->
+    <div class="page-break-before">
+        <h2 style="text-align: center;">ACKNOWLEDGEMENTS</h2>
+        <p>We would like to express our sincere gratitude to all those who contributed to the successful completion of this project.</p>
+        <p>First and foremost, we thank our project supervisor for their invaluable guidance, expertise, and continuous support throughout the development of this system. Their insights into artificial intelligence and software engineering were instrumental in shaping the technical approach and ensuring the project's success.</p>
+        <p>We extend our appreciation to the Department of Computer Science at the University of Sindh for providing the necessary resources and infrastructure that made this research possible. The academic environment fostered learning and innovation that were crucial to this work.</p>
+        <p>We acknowledge the open-source community and the developers of the libraries and frameworks used in this project, particularly the teams behind SentenceTransformers, FAISS, Transformers, Flask, and all other tools that formed the foundation of our system.</p>
+        <p>Special thanks to our fellow students and friends who participated in user testing and provided honest feedback that helped improve the system's usability and functionality.</p>
+        <p>Finally, we are deeply grateful to our families for their unwavering support, patience, and encouragement throughout our academic journey and especially during the intensive period of this project's development.</p>
+    </div>
+
+    <!-- ============================================
+     ABSTRACT
+     ============================================ -->
+    <div class="page-break-before">
+        
+        <h2>Abstract</h2>
+        <p class="no-indent">
+            This thesis presents the design, development, and implementation of an intelligent AI-powered document
+            chatbot system that leverages Retrieval-Augmented Generation (RAG) technology to enable natural language
+            querying of uploaded documents. The system combines advanced machine learning techniques including semantic
+            search using FAISS (Facebook AI Similarity Search), hybrid retrieval with BM25 keyword matching, and vision
+            AI capabilities for optical character recognition (OCR) and image captioning.
+        </p>
+        <p class="no-indent">
+            The primary objective of this project is to bridge the gap between unstructured document data and
+            user-friendly information retrieval. Unlike traditional keyword-based search systems, our chatbot
+            understands context and provides accurate, conversational responses by integrating document embeddings with
+            large language models (LLMs). The system supports multiple document formats including PDF, DOCX, and TXT
+            files, while also processing images through the BLIP (Bootstrapping Language-Image Pre-training) model for
+            visual content understanding.
+        </p>
+        <p class="no-indent">
+            Key features include secure user authentication with OTP email verification, real-time external tool
+            integration (weather API, Wikipedia search, mathematical calculations), comprehensive chat history
+            management, bookmark functionality for important responses, and a fully responsive web interface with
+            dark/light mode support. The system architecture follows a modular design pattern with clear separation
+            between authentication, document processing, query classification, hybrid retrieval, and response generation
+            components.
+        </p>
+        <p class="no-indent">
+            Performance evaluation demonstrates that the hybrid retrieval approach (combining semantic and lexical
+            search) achieves superior accuracy compared to single-method approaches, with average query response times
+            under 3 seconds. The system successfully handles concurrent multi-user scenarios and maintains data
+            persistence through a well-structured MySQL database. This research contributes to the growing field of
+            conversational AI by providing a practical, scalable solution for intelligent document interaction suitable
+            for educational, business, and research applications.
+        </p>
+        <p class="no-indent">
+            <strong>Keywords:</strong> Retrieval-Augmented Generation, FAISS, Natural Language Processing, Document
+            Chatbot, Vision AI, Semantic Search, Hybrid Retrieval, Flask, Machine Learning
+        </p>
+    
+    </div>
+    
+
+    <!-- TABLE OF CONTENTS will be added here manually by user -->
+    
+    <!-- ============================================
+     CHAPTER 1: INTRODUCTION
+     ============================================ -->
+    <div class="chapter page-break-before" id="chapter1">
+        <h1><span class="chapter-number">CHAPTER 1</span><br>INTRODUCTION</h1>
+
+        <h2>1.1 MOTIVATION</h2>
+
+        <p>
+            The motivation for developing an AI-powered document chatbot with RAG capabilities stems from several key
+            factors:
+        </p>
+
+        
+        <h2>1.2 CONTRIBUTIONS OF THE THESIS</h2>
+        <p>This project makes several significant contributions to the field of conversational AI and intelligent document interaction:</p>
+
+        <h3>1.2.1 Technical Contributions</h3>
+        <ul>
+            <li><strong>Hybrid Retrieval Implementation:</strong> Successfully integrated semantic search (FAISS) with lexical search (BM25) to achieve superior retrieval accuracy</li>
+            <li><strong>Multimodal Processing:</strong> Combined text extraction, OCR, and image captioning for comprehensive document understanding</li>
+            <li><strong>Modular RAG Architecture:</strong> Designed and implemented a extensible system architecture that separates concerns and enables easy maintenance</li>
+        </ul>
+        
+        <h3>1.2.2 Practical Contributions</h3>
+        <ul>
+            <li><strong>Production-Ready System:</strong> Developed a fully functional web application with authentication, user management, and data persistence</li>
+            <li><strong>User Experience Design:</strong> Created an intuitive interface with features like chat history, bookmarks, and templates</li>
+            <li><strong>Documentation and Evaluation:</strong> Comprehensive testing and performance analysis demonstrating real-world viability</li>
+        </ul>
+
+        <h2>1.3 STRUCTURE OF THE THESIS</h2>
+        <p>This thesis is organized into five chapters, each addressing specific aspects of the project:</p>
+        <ul>
+            <li><strong>Chapter 1 (Introduction)</strong> provides the motivation, contributions, and structure of this thesis.</li>
+            <li><strong>Chapter 2 (Background)</strong> examines existing research and technologies related to RAG systems, chatbots, semantic search, and vision AI.</li>
+            <li><strong>Chapter 3 (Research Methodology)</strong> details the system requirements, design approach, and architectural decisions.</li>
+            <li><strong>Chapter 4 (Results and Discussion)</strong> presents the implementation details, testing results, performance analysis, and discussion of challenges.</li>
+            <li><strong>Chapter 5 (Conclusion and Future Directions)</strong> summarizes achievements, reflects on lessons learned, and outlines potential future enhancements.</li>
+        </ul>
+    </div>
+
+    <!-- ============================================
+     CHAPTER 2: BACKGROUND
+     ============================================ -->
+    <div class="chapter page-break-before" id="chapter2">
+        <h1><span class="chapter-number">CHAPTER 2</span><br>BACKGROUND</h1>
+        
+        <p>This chapter presents the theoretical foundation and related work that underpins our AI-powered document chatbot system. We examine the evolution of chatbot technology, explore the principles of Retrieval-Augmented Generation, discuss document processing techniques, and review vision AI capabilities.</p>
+
+        
+
+        <h2 id="ch2-1">2.1 Evolution of Chatbot Technology</h2>
+        <p>
+            The history of chatbots spans several decades, beginning with ELIZA in the 1960s, one of the first programs
+            designed to simulate conversation. ELIZA used pattern matching and substitution methodology to simulate
+            intelligent conversation, though it had no real understanding of language. This was followed by PARRY in
+            1972, which attempted to simulate a person with paranoid schizophrenia, and later by more sophisticated
+            systems like ALICE (Artificial Linguistic Internet Computer Entity) in 1995, which won the Loebner Prize
+            multiple times.
+        </p>
+        <p>
+            The evolution of chatbots can be broadly categorized into four generations:
+        </p>
+        <ul>
+            <li><strong>Rule-Based Systems (1960s-1990s):</strong> Early chatbots relied on predefined rules and pattern
+                matching. While limited in capability, they established the foundation for human-computer conversation.
+            </li>
+            <li><strong>Statistical Methods (1990s-2010s):</strong> Introduction of machine learning techniques enabled
+                systems to learn from data rather than relying solely on handcrafted rules. This era saw the application
+                of Hidden Markov Models, Support Vector Machines, and early neural networks.</li>
+            <li><strong>Deep Learning Era (2010s):</strong> The advent of deep learning, particularly Recurrent Neural
+                Networks (RNNs) and Long Short-Term Memory networks (LSTMs), revolutionized natural language
+                understanding and generation. Sequence-to-sequence models enabled more natural conversation flow.</li>
+            <li><strong>Transformer-Based Models (2017-Present):</strong> The introduction of the Transformer
+                architecture and subsequent models like BERT, GPT, and T5 marked a paradigm shift. These models
+                demonstrated unprecedented language understanding and generation capabilities, enabling truly
+                conversational AI systems.</li>
+        </ul>
+
+        <h2 id="ch2-2">2.2 Retrieval-Augmented Generation (RAG)</h2>
+        <p>
+            Retrieval-Augmented Generation represents a significant advancement in addressing the limitations of pure
+            generative models. The concept was formally introduced by Lewis et al. (2020) in their seminal paper
+            "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks." RAG combines the benefits of
+            retrieval-based and generation-based approaches by first retrieving relevant documents from a knowledge base
+            and then using this retrieved context to generate responses.
+        </p>
+
+        <h3>Core Principles of RAG</h3>
+        <p>
+            RAG systems operate on two fundamental components:
+        </p>
+        <ol>
+            <li><strong>Retriever Component:</strong> Responsible for finding relevant documents or passages from a
+                knowledge base given a query. This can be implemented using various techniques including dense retrieval
+                (using embeddings) or sparse retrieval (using traditional IR methods like TF-IDF or BM25).</li>
+            <li><strong>Generator Component:</strong> Takes the retrieved context along with the original query and
+                generates a natural language response. This is typically implemented using large language models that
+                have been trained or fine-tuned for conditional generation.</li>
+        </ol>
+
+        <h3>Advantages of RAG</h3>
+        <ul>
+            <li><strong>Up-to-date Information:</strong> Unlike static pre-trained models, RAG systems can access and
+                reason about current information by retrieving from updated knowledge bases.</li>
+            <li><strong>Reduced Hallucination:</strong> By grounding responses in retrieved factual content, RAG systems
+                are less likely to generate false or misleading information.</li>
+            <li><strong>Transparency and Explainability:</strong> The retrieval step provides transparency by showing
+                which sources informed the generated response.</li>
+            <li><strong>Domain Adaptation:</strong> RAG systems can easily adapt to new domains by simply updating the
+                knowledge base without retraining the underlying language model.</li>
+            <li><strong>Efficiency:</strong> Compared to fine-tuning large language models, updating a retrieval index
+                is computationally much more efficient.</li>
+        </ul>
+
+        <h2 id="ch2-3">2.3 Document Processing and Embeddings</h2>
+        <p>
+            Effective document processing is crucial for RAG systems. This involves several key steps:
+        </p>
+
+        <h3>Text Extraction</h3>
+        <p>
+            Various libraries and tools support text extraction from different document formats. PyMuPDF (fitz) excels
+            at PDF text extraction, python-docx handles Microsoft Word documents, and standard file I/O operations
+            process plain text files. The challenge lies in maintaining document structure, handling special characters,
+            and preserving formatting when relevant.
+        </p>
+
+        <h3>Chunking Strategies</h3>
+        <p>
+            Breaking documents into semantically meaningful chunks is critical for effective retrieval. Common
+            strategies include:
+        </p>
+        <ul>
+            <li><strong>Fixed-size chunking:</strong> Splitting text into uniform-sized pieces (e.g., 512 tokens)</li>
+            <li><strong>Sentence-based chunking:</strong> Using sentence boundaries as natural splitting points</li>
+            <li><strong>Paragraph-based chunking:</strong> Maintaining paragraph integrity for better semantic coherence
+            </li>
+            <li><strong>Semantic chunking:</strong> Using models to identify topic boundaries and split accordingly</li>
+            <li><strong>Overlapping chunks:</strong> Ensuring context continuity by creating overlapping segments</li>
+        </ul>
+
+        <h3>Text Embeddings</h3>
+        <p>
+            Text embeddings transform natural language into dense vector representations that capture semantic meaning.
+            Popular embedding models include:
+        </p>
+        <ul>
+            <li><strong>Sentence-BERT (SBERT):</strong> Modifications to BERT specifically designed for generating
+                sentence embeddings efficiently. Models like 'all-MiniLM-L6-v2' provide excellent performance-to-size
+                ratios.</li>
+            <li><strong>OpenAI Embeddings:</strong> The 'text-embedding-ada-002' model offers high-quality embeddings
+                but requires API calls.</li>
+            <li><strong>Instructor Embeddings:</strong> Task-specific embeddings that can be customized with natural
+                language instructions.</li>
+            <li><strong>E5 Models:</strong> State-of-the-art open-source embedding models from Microsoft.</li>
+        </ul>
+
+        <h2 id="ch2-4">2.4 Vector Databases and Semantic Search</h2>
+        <p>
+            Vector databases are specialized systems designed to store and query high-dimensional vector embeddings
+            efficiently. For semantic search applications in RAG systems, these databases are essential components.
+        </p>
+
+        <h3>FAISS (Facebook AI Similarity Search)</h3>
+        <p>
+            FAISS, developed by Facebook AI Research, is a library for efficient similarity search and clustering of
+            dense vectors. It provides several key advantages:
+        </p>
+        <ul>
+            <li>Highly optimized C++ implementation with Python bindings</li>
+            <li>Support for both CPU and GPU acceleration</li>
+            <li>Multiple indexing strategies (flat, IVF, HNSW, PQ) for different speed-accuracy trade-offs</li>
+            <li>Ability to handle billions of vectors</li>
+            <li>Thread-safe operations for concurrent queries</li>
+        </ul>
+        <p>
+            For our RAG system, FAISS IndexFlatIP (Inner Product) provides accurate results for smaller document
+            collections, while more advanced indices like IVF or HNSW can be employed for larger datasets requiring
+            faster retrieval.
+        </p>
+
+        <h3>Alternative Vector Databases</h3>
+        <ul>
+            <li><strong>Pinecone:</strong> Managed vector database with automatic scaling</li>
+            <li><strong>Weaviate:</strong> Open-source vector database with GraphQL interface</li>
+            <li><strong>Milvus:</strong> Open-source vector database designed for scalability</li>
+            <li><strong>Qdrant:</strong> Vector database with advanced filtering capabilities</li>
+            <li><strong>Chroma:</strong> AI-native embedding database focused on developer experience</li>
+        </ul>
+
+        <h2 id="ch2-5">2.5 Hybrid Retrieval Methods</h2>
+        <p>
+            While semantic search using dense embeddings captures contextual similarity effectively, it can sometimes
+            miss exact keyword matches that traditional lexical search handles well. Hybrid retrieval combines the
+            strengths of both approaches.
+        </p>
+
+        <h3>BM25 (Best Matching 25)</h3>
+        <p>
+            BM25 is a probabilistic ranking function used in information retrieval that considers:
+        </p>
+        <ul>
+            <li>Term frequency (TF): How often a term appears in a document</li>
+            <li>Inverse document frequency (IDF): How unique a term is across all documents</li>
+            <li>Document length normalization to prevent bias toward longer documents</li>
+        </ul>
+        <p>
+            BM25 excels at finding documents containing specific technical terms, acronyms, or rare keywords that
+            semantic search might miss.
+        </p>
+
+        <h3>Fusion Strategies</h3>
+        <p>
+            Combining results from semantic and lexical search requires effective fusion strategies:
+        </p>
+        <ul>
+            <li><strong>Score-based fusion:</strong> Normalizing and combining scores from both methods</li>
+            <li><strong>Rank-based fusion:</strong> Using techniques like Reciprocal Rank Fusion (RRF)</li>
+            <li><strong>Learned fusion:</strong> Training a model to optimally combine results</li>
+            <li><strong>Re-ranking:</strong> Using a cross-encoder to re-rank candidate documents</li>
+        </ul>
+
+        <h2 id="ch2-6">2.6 Vision AI and Multimodal Learning</h2>
+        <p>
+            Many documents contain valuable information in visual form—images, diagrams, charts, and scanned pages.
+            Vision AI enables systems to process and understand this visual content.
+        </p>
+
+        <h3>Optical Character Recognition (OCR)</h3>
+        <p>
+            OCR technology converts images of text into machine-readable text. Modern OCR systems like Tesseract,
+            EasyOCR, and Paddle OCR use deep learning to achieve high accuracy across various fonts, languages, and
+            image qualities. Tesseract, maintained by Google, offers:
+        </p>
+        <ul>
+            <li>Support for over 100 languages</li>
+            <li>Both LSTM-based and legacy recognition engines</li>
+            <li>Page segmentation modes for different document layouts</li>
+            <li>Integration with image preprocessing libraries for improved accuracy</li>
+        </ul>
+
+        <h3>Image Captioning</h3>
+        <p>
+            Image captioning models generate natural language descriptions of visual content. BLIP (Bootstrapping
+            Language-Image Pre-training) represents the state-of-the-art in this domain, offering:
+        </p>
+        <ul>
+            <li>Vision encoder based on ViT (Vision Transformer)</li>
+            <li>Language decoder for generating captions</li>
+            <li>Multimodal encoder-decoder architecture</li>
+            <li>Pre-training on large-scale image-text pairs</li>
+        </ul>
+
+        <h3>Multimodal Embeddings</h3>
+        <p>
+            Models like CLIP (Contrastive Language-Image Pre-training) create unified embedding spaces for both text and
+            images, enabling:
+        </p>
+        <ul>
+            <li>Cross-modal retrieval (text-to-image and image-to-text)</li>
+            <li>Zero-shot image classification</li>
+            <li>Visual question answering</li>
+            <li>Image-text similarity scoring</li>
+        </ul>
+
+        <h2 id="ch2-7">2.7 Related Systems and Comparative Analysis</h2>
+        <p>
+            Several existing systems and platforms offer document interaction capabilities. A comparative analysis helps
+            position our work:
+        </p>
+
+        <table>
+            <caption>Table 2.1: Comparison of Document Chatbot Systems</caption>
+            <thead>
+                <tr>
+                    <th>System</th>
+                    <th>RAG Support</th>
+                    <th>Vision AI</th>
+                    <th>Hybrid Retrieval</th>
+                    <th>Self-Hosted</th>
+                    <th>Limitations</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ChatGPT with Documents</td>
+                    <td>Yes</td>
+                    <td>Yes (GPT-4V)</td>
+                    <td>Proprietary</td>
+                    <td>No</td>
+                    <td>Subscription required, data privacy concerns, limited customization</td>
+                </tr>
+                <tr>
+                    <td>Claude with Documents</td>
+                    <td>Yes</td>
+                    <td>Limited</td>
+                    <td>Proprietary</td>
+                    <td>No</td>
+                    <td>API costs, upload size limits, no vision support in standard version</td>
+                </tr>
+                <tr>
+                    <td>LangChain Applications</td>
+                    <td>Yes</td>
+                    <td>Configurable</td>
+                    <td>Configurable</td>
+                    <td>Yes</td>
+                    <td>Requires extensive configuration, no built-in UI, developer-focused</td>
+                </tr>
+                <tr>
+                    <td>LlamaIndex Applications</td>
+                    <td>Yes</td>
+                    <td>Limited</td>
+                    <td>Yes</td>
+                    <td>Yes</td>
+                    <td>Complex setup, limited out-of-box vision support</td>
+                </tr>
+                <tr>
+                    <td>Our System</td>
+                    <td>Yes</td>
+                    <td>Yes</td>
+                    <td>Yes</td>
+                    <td>Yes</td>
+                    <td>Language support, mobile app, offline mode</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>
+            Our system distinguishes itself by providing:
+        </p>
+        <ul>
+            <li>Complete hybrid retrieval with both semantic (FAISS) and lexical (BM25) search</li>
+            <li>Integrated vision AI with both OCR and image captioning</li>
+            <li>Self-hosted deployment option for data privacy</li>
+            <li>Built-in authentication and user management</li>
+            <li>Comprehensive chat management features (history, bookmarks, templates)</li>
+            <li>Real-time tool integration beyond document queries</li>
+            <li>Fully functional web interface requiring no additional configuration</li>
+        </ul>
+
+        <h3>Research Contributions</h3>
+        <p>
+            This project contributes to the field by:
+        </p>
+        <ol>
+            <li>Demonstrating effective integration of hybrid retrieval in a production RAG system</li>
+            <li>Providing a practical implementation of multimodal document processing</li>
+            <li>Offering insights into per-chat document indexing versus global indexing strategies</li>
+            <li>Presenting a complete, deployable system architecture for educational and small-scale business use</li>
+            <li>Documenting real-world challenges and solutions in RAG system development</li>
+        </ol>
+    </div>
+
+    <!-- IMAGE PLACEHOLDER -->
+    <figure>
+        <img src="./thesis_images/chatbot evolution eliza.jpg" alt="Description">
+        <figcaption>Figure X.X: Description</figcaption>
+    </figure>
+
+    <!-- ============================================
+     CHAPTER 3: SYSTEM REQUIREMENTS & ANALYSIS
+     ============================================ -->
+    
+        <h2>2.8 SUMMARY</h2>
+        <p>This chapter provided a comprehensive review of the theoretical foundations and related technologies underlying our RAG-powered document chatbot system. We traced the evolution of chatbot technology from rule-based systems to modern transformer-based models, highlighting the paradigm shift that RAG represents.</p>
+        <p>Key insights from this review include: (1) RAG systems effectively address the knowledge cutoff limitation of large language models by combining retrieval with generation; (2) Hybrid retrieval methods that merge semantic and lexical search outperform single-method approaches; (3) Vision AI capabilities extend document processing beyond text to include image understanding; (4) The integration of multiple AI technologies requires careful architectural design to balance performance, accuracy, and usability.</p>
+        <p>The comparative analysis of existing systems revealed that while commercial solutions like ChatGPT offer powerful capabilities, they lack customization and raise data privacy concerns. Framework-based solutions like LangChain provide flexibility but require extensive configuration. Our system aims to bridge this gap by providing a complete, self-hosted solution with integrated hybrid retrieval and vision AI, packaged in a user-friendly interface suitable for educational and small business applications.</p>
+    </div>

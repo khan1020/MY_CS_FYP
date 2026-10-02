@@ -1,0 +1,595 @@
+/**
+ * FYP Thesis - Professional Academic Styling
+ * AI-Powered Document Chatbot with RAG Capabilities
+ * University of Sindh - Computer Science Department
+ * Batch 2k22
+ */
+
+/* ==================== ROOT VARIABLES ==================== */
+:root {
+  /* Typography */
+  --font-primary: 'Georgia', 'Times New Roman', serif;
+  --font-secondary: 'Arial', 'Helvetica', sans-serif;
+  --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+
+  /* Colors - Academic Palette */
+  --color-primary: #1a1a1a;
+  --color-secondary: #4a4a4a;
+  --color-accent: #2c5282;
+  --color-light: #f7f7f7;
+  --color-border: #cccccc;
+  --color-code-bg: #f4f4f4;
+  --color-link: #2563eb;
+  --color-link-hover: #1d4ed8;
+
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+
+  /* Page dimensions (A4) */
+  --page-width: 210mm;
+  --page-height: 297mm;
+  --page-margin: 25mm;
+}
+
+/* ==================== GLOBAL RESETS ==================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 12pt;
+  line-height: 1.6;
+}
+
+body {
+  font-family: var(--font-primary);
+  color: var(--color-primary);
+  background-color: white;
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: var(--page-margin);
+  text-align: justify;
+}
+
+/* ==================== TYPOGRAPHY ==================== */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-secondary);
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  line-height: 1.3;
+  page-break-after: avoid;
+}
+
+h1 {
+  font-size: 2.2rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 3px solid var(--color-accent);
+  padding-bottom: var(--spacing-sm);
+  margin-top: var(--spacing-xl);
+}
+
+h2 {
+  font-size: 1.75rem;
+  color: var(--color-accent);
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: var(--spacing-xs);
+}
+
+h3 {
+  font-size: 1.4rem;
+  color: var(--color-secondary);
+}
+
+h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-style: italic;
+}
+
+h6 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+p {
+  margin-bottom: var(--spacing-md);
+  text-indent: 2em;
+  line-height: 1.8;
+}
+
+/* Remove indent from first paragraph after headings */
+h1+p,
+h2+p,
+h3+p,
+h4+p,
+h5+p,
+h6+p {
+  text-indent: 0;
+}
+
+/* ==================== LINKS ==================== */
+a {
+  color: var(--color-link);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
+
+/* ==================== LISTS ==================== */
+ul,
+ol {
+  margin: var(--spacing-md) 0;
+  padding-left: var(--spacing-lg);
+}
+
+li {
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.8;
+}
+
+ul ul,
+ol ol,
+ul ol,
+ol ul {
+  margin-top: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* ==================== CODE BLOCKS ==================== */
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background-color: var(--color-code-bg);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  border: 1px solid var(--color-border);
+}
+
+pre {
+  background-color: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-accent);
+  border-radius: 4px;
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  overflow-x: auto;
+  page-break-inside: avoid;
+}
+
+pre code {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+
+/* ==================== TABLES ==================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--spacing-md) 0;
+  page-break-inside: avoid;
+}
+
+table caption {
+  font-weight: 600;
+  text-align: left;
+  padding: var(--spacing-sm) 0;
+  caption-side: top;
+  color: var(--color-secondary);
+}
+
+th,
+td {
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-sm);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background-color: var(--color-accent);
+  color: white;
+  font-family: var(--font-secondary);
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: var(--color-light);
+}
+
+/* ==================== FIGURES & IMAGES ==================== */
+figure {
+  margin: var(--spacing-lg) 0;
+  text-align: center;
+  page-break-inside: avoid;
+}
+
+figure img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+
+figcaption {
+  font-size: 0.9em;
+  color: var(--color-secondary);
+  font-style: italic;
+  margin-top: var(--spacing-sm);
+  text-align: center;
+}
+
+/* Full page figure for screenshots */
+figure.full-page {
+  page-break-before: always;
+  page-break-after: always;
+  height: 95vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+}
+
+figure.full-page img {
+  max-height: 85vh;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Image placeholders */
+.img-placeholder {
+  background-color: var(--color-light);
+  border: 2px dashed var(--color-border);
+  border-radius: 4px;
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-secondary);
+  margin: var(--spacing-lg) 0;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  page-break-inside: avoid;
+}
+
+.img-placeholder::before {
+  content: "📷";
+  font-size: 3rem;
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  opacity: 0.5;
+}
+
+.img-placeholder-text {
+  font-weight: 600;
+  font-size: 1.1em;
+  margin-bottom: var(--spacing-xs);
+}
+
+.img-placeholder-desc {
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+/* ==================== BLOCKQUOTES ==================== */
+blockquote {
+  border-left: 4px solid var(--color-accent);
+  padding-left: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  font-style: italic;
+  color: var(--color-secondary);
+  page-break-inside: avoid;
+}
+
+/* ==================== SPECIAL SECTIONS ==================== */
+
+/* Cover Page */
+.cover-page {
+  text-align: center;
+  page-break-after: always;
+  min-height: calc(var(--page-height) - 2 * var(--page-margin));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.cover-page h1 {
+  font-size: 2.5rem;
+  margin: var(--spacing-xl) 0;
+  border: none;
+}
+
+.cover-page .subtitle {
+  font-size: 1.3rem;
+  color: var(--color-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.cover-page .author-info {
+  margin: var(--spacing-xl) 0;
+}
+
+.cover-page .university-info {
+  margin-top: var(--spacing-xl);
+}
+
+/* Abstract */
+.abstract {
+  page-break-after: always;
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-light);
+  margin: var(--spacing-lg) 0;
+}
+
+.abstract h2 {
+  text-align: center;
+  border: none;
+  margin-top: 0;
+}
+
+.abstract p {
+  text-indent: 0;
+}
+
+/* Table of Contents */
+.toc {
+  page-break-after: always;
+  margin: var(--spacing-lg) 0;
+}
+
+.toc h2 {
+  text-align: center;
+}
+
+.toc ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.toc>ul>li {
+  margin-bottom: var(--spacing-md);
+  font-weight: 600;
+}
+
+.toc ul ul {
+  padding-left: var(--spacing-lg);
+  font-weight: normal;
+}
+
+.toc a {
+  text-decoration: none;
+  color: var(--color-primary);
+  display: flex;
+  justify-content: space-between;
+}
+
+.toc a:hover {
+  color: var(--color-link);
+}
+
+.toc .toc-page {
+  margin-left: var(--spacing-sm);
+}
+
+/* Chapter starts */
+.chapter {
+  page-break-before: always;
+}
+
+.chapter-number {
+  font-size: 1.2rem;
+  color: var(--color-accent);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* References */
+.references {
+  page-break-before: always;
+}
+
+.reference-item {
+  margin-bottom: var(--spacing-md);
+  padding-left: 2em;
+  text-indent: -2em;
+  line-height: 1.6;
+}
+
+/* Appendix */
+.appendix {
+  page-break-before: always;
+}
+
+/* ==================== UTILITY CLASSES ==================== */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.italic {
+  font-style: italic;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+.no-indent {
+  text-indent: 0;
+}
+
+.page-break-before {
+  page-break-before: always;
+}
+
+.page-break-after {
+  page-break-after: always;
+}
+
+.no-page-break {
+  page-break-inside: avoid;
+}
+
+/* Highlight important text */
+.highlight {
+  background-color: #fff3cd;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+}
+
+/* ==================== PRINT STYLES ==================== */
+@media print {
+  @page {
+    size: A4;
+    margin: 25mm;
+  }
+
+  body {
+    font-size: 11pt;
+    line-height: 1.5;
+    max-width: 100%;
+    padding: 0;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.6rem;
+  }
+
+  h3 {
+    font-size: 1.3rem;
+  }
+
+  /* Prevent page breaks */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    page-break-after: avoid;
+  }
+
+  p,
+  blockquote,
+  pre,
+  table,
+  figure {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure links are visible */
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  /* Hide screen-only elements */
+  .no-print {
+    display: none;
+  }
+
+  /* Optimize images */
+  img {
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure code is readable */
+  pre,
+  code {
+    border: 1px solid var(--color-border);
+    background-color: var(--color-light);
+  }
+
+  /* Page numbers */
+  .page-number {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    font-size: 0.9em;
+    color: var(--color-secondary);
+  }
+}
+
+/* ==================== RESPONSIVE ADJUSTMENTS ==================== */
+@media screen and (max-width: 768px) {
+  body {
+    padding: var(--spacing-md);
+    font-size: 11pt;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+  }
+
+  pre {
+    padding: var(--spacing-sm);
+    font-size: 0.8em;
+  }
+
+  table {
+    font-size: 0.9em;
+  }
+
+  th,
+  td {
+    padding: var(--spacing-xs);
+  }
+}

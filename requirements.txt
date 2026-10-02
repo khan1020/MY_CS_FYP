@@ -12,6 +12,7 @@ mysqlclient
 PyMuPDF
 python-docx
 Pillow
+reportlab
 
 # AI & Machine Learning (RAG)
 sentence-transformers

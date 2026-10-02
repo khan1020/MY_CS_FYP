@@ -14,7 +14,7 @@
 
 const API_CONFIG = {
     // Update this URL when ngrok restarts or for production deployment
-    BACKEND_URL: 'https://e13febe3a5e1.ngrok-free.app',
+    BACKEND_URL: 'https://70d0-121-52-154-58.ngrok-free.app',
 
     // API endpoints (for reference and easy changes)
     ENDPOINTS: {
